@@ -1,1 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Penilaian Lembar Kerja Murid</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h2 {
+            color: #1c1e21;
+            margin-bottom: 25px;
+        }
+        input[type="password"] {
+            width: calc(100% - 22px);
+            padding: 12px 10px;
+            margin-bottom: 20px;
+            border: 1px solid #dddfe2;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #1877f2;
+            box-shadow: 0 0 0 2px #e7f3ff;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #166fe5;
+        }
+        .error {
+            color: #fa383e;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2>for Teacher</h2>
+    <h1>Penilaian Lembar Kerja Murid</h1>
+    <form id="formLoginGuru" onsubmit="loginGuru(event)">
+        <input type="password" id="password" name="password" placeholder="Masukkan Password" required>
+        <button type="submit">Login</button>
+        <p id="guruError" class="error"></p>
+    </form>
+</div>
+
+<script>
+    function loginGuru(event) {
+        event.preventDefault();
+        const passwordInput = document.getElementById('password');
+        const errorElement = document.getElementById('guruError');
+        
+        if (passwordInput.value === 'Virus@215000') {
+            // Tandai guru sudah login di sessionStorage
+            sessionStorage.setItem('guruLoggedInLKM', 'true');
+            // Arahkan ke halaman penilaian
+            window.location.href = 'penilaian.html';
+        } else {
+            errorElement.textContent = 'Password yang Anda masukkan salah.';
+            errorElement.style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>
 
