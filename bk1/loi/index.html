@@ -3,101 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Asesmen Diagnostik</title>
+    <title>Login - Lembar Observasi</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .container { background-color: #ffffff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
-        h2 { color: #333; margin-bottom: 20px; }
-        .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; }
-        .tab-button { flex: 1; padding: 15px; border: none; background-color: transparent; cursor: pointer; font-size: 16px; color: #aaa; transition: all 0.3s; }
-        .tab-button.active { color: #007BFF; border-bottom: 2px solid #007BFF; }
-        .form-content { display: none; }
-        .form-content.active { display: block; }
-        input[type="text"], input[type="password"], select { width: calc(100% - 20px); padding: 12px 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
-        button { width: 100%; padding: 12px; background-color: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
-        button:hover { background-color: #0056b3; }
-        .error { color: #d9534f; margin-top: 10px; font-size: 14px; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h2 {
+            color: #1c1e21;
+            margin-bottom: 25px;
+        }
+        input[type="password"] {
+            width: calc(100% - 22px);
+            padding: 12px 10px;
+            margin-bottom: 20px;
+            border: 1px solid #dddfe2;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #1877f2;
+            box-shadow: 0 0 0 2px #e7f3ff;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #166fe5;
+        }
+        .error {
+            color: #fa383e;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Login Asesmen Diagnostik</h2>
-    <div class="tabs">
-        <button class="tab-button active" onclick="showForm('siswa')">Siswa</button>
-        <button class="tab-button" onclick="showForm('guru')">Guru</button>
-    </div>
-
-    <div id="siswa-form" class="form-content active">
-        <form id="formLoginSiswa" onsubmit="loginSiswa(event)">
-            <select id="kelas" name="kelas" required>
-                <option value="" disabled selected>Pilih Kelas</option>
-                <option value="X TKPI">X TKPI</option>
-                <option value="X NKPI A">X NKPI A</option>
-                <option value="X NKPI B">X NKPI B</option>
-                <option value="X TSM A">X TSM A</option>
-                <option value="X TSM B">X TSM B</option>
-                <option value="X APAT A">X APAT A</option>
-                <option value="X APAT B">X APAT B</option>
-            </select>
-            <input type="text" id="nama" name="nama" placeholder="Nama Lengkap" required>
-            <button type="submit">Mulai Mengerjakan</button>
-        </form>
-    </div>
-
-    <div id="guru-form" class="form-content">
-        <form id="formLoginGuru" onsubmit="loginGuru(event)">
-            <input type="password" id="password" name="password" placeholder="Password Guru" required>
-            <button type="submit">Login Guru</button>
-            <p id="guruError" class="error"></p>
-        </form>
-    </div>
+<div class="login-container">
+    <h2>for Teacher</h2>
+    <h1>Lembar Observasi Kesiapan Murid</h1>
+    <form id="formLoginGuru" onsubmit="loginGuru(event)">
+        <input type="password" id="password" name="password" placeholder="Masukkan Password" required>
+        <button type="submit">Login</button>
+        <p id="guruError" class="error"></p>
+    </form>
 </div>
 
 <script>
-    // Inisialisasi Database di memori jika belum ada
-    if (!localStorage.getItem('hasilKuisSiswa')) {
-        localStorage.setItem('hasilKuisSiswa', JSON.stringify([]));
-    }
-
-    function showForm(formName) {
-        document.getElementById('siswa-form').classList.remove('active');
-        document.getElementById('guru-form').classList.remove('active');
-        document.querySelector('.tab-button.active').classList.remove('active');
-
-        document.getElementById(formName + '-form').classList.add('active');
-        document.querySelector(`.tab-button[onclick="showForm('${formName}')"]`).classList.add('active');
-    }
-
-    function loginSiswa(event) {
-        event.preventDefault();
-        const nama = document.getElementById('nama').value;
-        const kelas = document.getElementById('kelas').value;
-
-        if (nama && kelas) {
-            // Simpan info siswa di sessionStorage untuk dibawa ke halaman kuis
-            sessionStorage.setItem('siswaNama', nama);
-            sessionStorage.setItem('siswaKelas', kelas);
-            window.location.href = 'quiz.html';
-        }
-    }
-
     function loginGuru(event) {
         event.preventDefault();
-        const password = document.getElementById('password').value;
+        const passwordInput = document.getElementById('password');
         const errorElement = document.getElementById('guruError');
-
-        if (password === 'Virus@215') {
-            errorElement.textContent = '';
-            // Tandai guru sudah login
-            sessionStorage.setItem('role', 'guru');
-            window.location.href = 'hasil.html';
+        
+        if (passwordInput.value === 'Virus@215000') {
+            // Tandai guru sudah login di sessionStorage
+            sessionStorage.setItem('guruLoggedIn', 'true');
+            // Arahkan ke halaman observasi
+            window.location.href = 'observasi.html';
         } else {
-            errorElement.textContent = 'Password salah!';
+            errorElement.textContent = 'Password yang Anda masukkan salah.';
+            errorElement.style.display = 'block';
         }
     }
 </script>
 
 </body>
 </html>
-
