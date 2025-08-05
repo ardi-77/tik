@@ -14,15 +14,19 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
         .login-wrapper {
             display: flex;
-            width: 900px;
+            width: 100%;
+            max-width: 900px;
             height: 550px;
             background-color: #fff;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
             overflow: hidden;
+            transition: all 0.3s ease-in-out;
         }
         .login-form, .welcome-panel {
             width: 50%;
@@ -105,6 +109,52 @@
             max-width: 300px;
             line-height: 1.6;
         }
+
+        /* [NEW] Responsive Design */
+        @media (max-width: 920px) {
+            .login-wrapper {
+                flex-direction: column;
+                height: auto;
+                max-width: 500px; /* Max width for single column view */
+            }
+
+            .login-form, .welcome-panel {
+                width: 100%;
+            }
+
+            .welcome-panel {
+                padding: 40px 30px;
+                border-radius: 0 0 10px 10px; /* Adjust border radius for stacked view */
+            }
+
+            .login-form {
+                padding: 40px 30px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            body {
+                /* Allow scrolling on small screens and remove padding */
+                align-items: flex-start;
+                padding: 0;
+            }
+            .login-wrapper {
+                width: 100%;
+                height: 100%;
+                min-height: 100vh;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            .login-form {
+                padding: 40px 25px;
+                justify-content: flex-start;
+                padding-top: 60px;
+            }
+            .welcome-panel {
+                /* Hide the welcome panel on very small screens to focus on the form */
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -145,7 +195,7 @@
         </div>
     </div>
     <div class="welcome-panel">
-        <h2>Welcome!</h2>
+        <h2>Selamat Datang!</h2>
         <p>Silakan login sesuai dengan peran Anda untuk mengakses Lembar Asesmen Diagnostik.</p>
     </div>
 </div>
@@ -170,7 +220,7 @@
         if (nama && kelas) {
             sessionStorage.setItem('siswaNama', nama);
             sessionStorage.setItem('siswaKelas', kelas);
-            window.location.href = 'quiz.html';
+            window.location.href = './quiz.html';
         }
     }
 
@@ -180,7 +230,7 @@
         const errorElement = document.getElementById('guruError');
         if (password === 'Virus@215000') {
             sessionStorage.setItem('guruLoggedInAsesmen', 'true');
-            window.location.href = 'hasil.html';
+            window.location.href = './hasil.html';
         } else {
             errorElement.textContent = 'Password salah!';
         }
@@ -189,4 +239,3 @@
 
 </body>
 </html>
-
