@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Asesmen - Dasbor Guru</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            .print-area, .print-area * { visibility: visible; }
+            .print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+            .no-print { display: none !important; }
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; color: #333; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #0056b3; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .header-controls { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .control-buttons { display: flex; gap: 10px; align-items: center; }
+        select, button { padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 14px; }
+        button { cursor: pointer; color: white; transition: background-color 0.3s; border: none; font-weight: 500; }
+        .btn-logout { background-color: #6c757d; }
+        .btn-print { background-color: #007bff; }
+        .btn-primary { background-color: #28a745; }
+        .btn-delete-all { background-color: #dc3545; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .btn-detail { background-color: #17a2b8; font-size: 12px; padding: 5px 10px; }
+
+        .analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; }
+        .chart-card { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        .chart-card h3 { text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 16px; }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 25px; border: 1px solid #888; width: 80%; max-width: 800px; border-radius: 8px; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .modal-body { margin-top: 20px; max-height: 70vh; overflow-y: auto; padding-right: 15px; }
+        .qa-block { margin-bottom: 20px; padding-left: 10px; border-left: 3px solid #eaf2ff; }
+        .qa-block .question { font-weight: 600; }
+        .qa-block .answer { color: #555; margin-top: 5px; white-space: pre-wrap; }
+        .pemahaman-guru { margin-top: 10px; }
+        .pemahaman-guru label { font-weight: 600; color: #0056b3; }
+        
+        /* [NEW] Styles for detail table in modal */
+        .detail-table {
+            width: 100%;
+            margin-bottom: 25px;
+            border-collapse: collapse;
+        }
+        .detail-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            vertical-align: top;
+        }
+        .detail-table td:first-child {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            width: 30%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="print-area">
+    <div class="header-controls no-print">
+        <h1>Dasbor Hasil Asesmen</h1>
+        <div class="control-buttons">
+            <button class="btn-print" onclick="window.print()">Cetak Laporan</button>
+            <button class="btn-delete-all" onclick="clearAllData()">Hapus Seluruh Data</button>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="form-group no-print" style="margin-top: 20px;">
+        <label for="filterKelas"><strong>Filter Berdasarkan Kelas:</strong></label>
+        <select id="filterKelas" onchange="updateTampilan()">
+            <option value="semua">Tampilkan Semua Kelas</option>
+            <option value="X TKPI">X TKPI</option>
+            <option value="X NKPI A">X NKPI A</option>
+            <option value="X NKPI B">X NKPI B</option>
+            <option value="X TSM A">X TSM A</option>
+            <option value="X TSM B">X TSM B</option>
+            <option value="X APAT A">X APAT A</option>
+            <option value="X APAT B">X APAT B</option>
+        </select>
+    </div>
+
+    <h2>Rekapitulasi Hasil Siswa</h2>
+    <table id="hasilTable">
+        <thead><tr><th>Nama Siswa (A-Z)</th><th>Kelas</th><th>Pemahaman Rata-rata</th><th class="no-print">Aksi</th></tr></thead>
+        <tbody id="hasilTableBody"></tbody>
+    </table>
+
+    <hr style="margin: 40px 0;">
+
+    <h2>Analisis Tingkat Pemahaman</h2>
+    <div id="analysisContainer" class="analysis-grid"></div>
+</div>
+
+<div id="detailModal" class="modal">
+    <div class="modal-content">
+        <span class="close no-print" onclick="closeModal()">&times;</span>
+        <div class="print-area" id="modalBody"></div>
+    </div>
+</div>
+
+<script>
+    if (sessionStorage.getItem('guruLoggedInAsesmen') !== 'true') {
+        alert('Akses ditolak. Silakan login.');
+        window.location.href = 'index.html';
+    }
+
+    let db = JSON.parse(localStorage.getItem('hasilAsesmenSiswa')) || [];
+    let activeCharts = [];
+
+    const questions = [
+        { no: 1, text: 'Apa yang kamu ketahui tentang teknik memecah masalah menjadi bagian-bagian kecil?' },
+        { no: 2, text: 'Pernahkah kamu membagi tugas besar menjadi langkah-langkah kecil? Jelaskan contohnya.' },
+        { no: 3, text: 'Ketika menghadapi masalah kompleks, langkah apa yang biasanya kamu lakukan pertama kali?' },
+        { no: 4, text: 'Apa manfaat menurutmu dari memecah masalah menjadi bagian lebih kecil dan sederhana?' },
+        { no: 5, text: 'Dalam kelompok, bagaimana kamu biasanya bekerja? Berikan Alasan?' },
+        { no: 6, text: 'Menurutmu, apakah teknologi dapat membantu menyelesaikan masalah sehari-hari? Berikan contohnya.' }
+    ];
+
+    function logout() {
+        sessionStorage.removeItem('guruLoggedInAsesmen');
+        window.location.href = 'index.html';
+    }
+
+    function clearAllData() {
+        if (confirm("Apakah Anda yakin ingin menghapus seluruh data asesmen? Tindakan ini tidak dapat dibatalkan.")) {
+            localStorage.removeItem('hasilAsesmenSiswa');
+            db = [];
+            alert("Seluruh data telah dihapus.");
+            updateTampilan();
+        }
+    }
+
+    function updateTampilan() {
+        const filterKelas = document.getElementById('filterKelas').value;
+        const filteredData = db.filter(siswa => filterKelas === 'semua' || siswa.kelas === filterKelas);
+        filteredData.sort((a, b) => a.nama.localeCompare(b.nama));
+        
+        renderTabel(filteredData);
+        renderAnalisis(filteredData);
+    }
+
+    function renderTabel(data) {
+        const tableBody = document.getElementById('hasilTableBody');
+        tableBody.innerHTML = '';
+        if (data.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Tidak ada data untuk ditampilkan.</td></tr>`;
+        } else {
+            data.forEach(siswa => {
+                const pemahamanScores = { 'Tinggi': 3, 'Sedang': 2, 'Rendah': 1, 'Belum Dinilai': 0 };
+                let totalScore = 0;
+                let assessedCount = 0;
+                siswa.jawaban.forEach(j => { 
+                    const score = pemahamanScores[j.pemahaman];
+                    if (score > 0) {
+                        totalScore += score;
+                        assessedCount++;
+                    }
+                });
+                const avgScore = assessedCount > 0 ? totalScore / assessedCount : 0;
+                let avgPemahaman = 'Belum Dinilai';
+                if (avgScore > 2.5) avgPemahaman = 'Tinggi';
+                else if (avgScore > 1.5) avgPemahaman = 'Sedang';
+                else if (avgScore > 0) avgPemahaman = 'Rendah';
+
+                const row = `
+                    <tr>
+                        <td>${siswa.nama}</td>
+                        <td>${siswa.kelas}</td>
+                        <td>${avgPemahaman}</td>
+                        <td class="no-print"><button class="btn-detail" onclick="showDetail(${siswa.id})">Lihat & Nilai</button></td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+    }
+
+    function renderAnalisis(data) {
+        activeCharts.forEach(chart => chart.destroy());
+        activeCharts = [];
+        const analysisContainer = document.getElementById('analysisContainer');
+        analysisContainer.innerHTML = '';
+
+        if (data.length === 0) {
+            analysisContainer.innerHTML = `<p style="text-align:center; grid-column: 1 / -1;">Tidak ada data untuk dianalisis.</p>`;
+            return;
+        }
+
+        const pemahamanPerSoal = {};
+        data.forEach(siswa => {
+            siswa.jawaban.forEach(j => {
+                if (!pemahamanPerSoal[j.no]) pemahamanPerSoal[j.no] = { 'Tinggi': 0, 'Sedang': 0, 'Rendah': 0, 'Belum Dinilai': 0 };
+                pemahamanPerSoal[j.no][j.pemahaman]++;
+            });
+        });
+        
+        Object.keys(pemahamanPerSoal).forEach(noSoal => {
+            const questionObj = questions.find(q => q.no == noSoal);
+            const chartTitle = questionObj ? `${questionObj.no}. ${questionObj.text}` : `Pemahaman Soal No. ${noSoal}`;
+            createChart(`pemahaman_soal_${noSoal}`, chartTitle, 'bar', pemahamanPerSoal[noSoal]);
+        });
+    }
+
+    function createChart(canvasId, title, type, data) {
+        const analysisContainer = document.getElementById('analysisContainer');
+        const chartCard = document.createElement('div');
+        chartCard.className = 'chart-card';
+        chartCard.innerHTML = `<h3>${title}</h3><canvas id="${canvasId}"></canvas>`;
+        analysisContainer.appendChild(chartCard);
+        
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        const chart = new Chart(ctx, {
+            type: type,
+            data: {
+                labels: Object.keys(data),
+                datasets: [{
+                    label: 'Jumlah Siswa',
+                    data: Object.values(data),
+                    backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(255, 206, 86, 0.7)', 'rgba(255, 99, 132, 0.7)', 'rgba(201, 203, 207, 0.7)'],
+                }]
+            },
+            options: { indexAxis: 'y', plugins: { legend: { display: false } } }
+        });
+        activeCharts.push(chart);
+    }
+
+    const modal = document.getElementById('detailModal');
+    function showDetail(id) {
+        const item = db.find(s => s.id === id);
+        const modalBody = document.getElementById('modalBody');
+        
+        // [REVISED] Tampilan detail dengan tabel interaktif
+        const detailTableHtml = `
+            <h2>Detail Asesmen Siswa</h2>
+            <table class="detail-table">
+                <tr>
+                    <td>Topik / Materi</td>
+                    <td>Latihan Dekomposisi Masalah</td>
+                </tr>
+                <tr>
+                    <td>Tujuan Pembelajaran</td>
+                    <td>Mengetahui tingkat pemahaman awal siswa terhadap konsep dekomposisi dalam berpikir komputasional dan kesiapan mengikuti pembelajaran mendalam.</td>
+                </tr>
+                <tr>
+                    <td>Nama Siswa</td>
+                    <td>${item.nama}</td>
+                </tr>
+                <tr>
+                    <td>Kelas</td>
+                    <td>${item.kelas}</td>
+                </tr>
+                <tr>
+                    <td>Tanggal Pengerjaan</td>
+                    <td>${new Date(item.id).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</td>
+                </tr>
+            </table>
+        `;
+
+        let qaContent = '<h3>Jawaban Siswa</h3>';
+        item.jawaban.forEach(j => {
+            let jawabanText = '';
+            if (typeof j.jawaban === 'object') {
+                jawabanText = `<b>Pilihan:</b> ${j.jawaban.pilihan}<br><b>Alasan:</b> ${j.jawaban.alasan}`;
+            } else {
+                jawabanText = j.jawaban;
+            }
+            qaContent += `
+                <div class="qa-block">
+                    <p class="question">${j.no}. ${j.pertanyaan}</p>
+                    <div class="answer">${jawabanText}</div>
+                    <div class="pemahaman-guru">
+                        <label for="pemahaman-select-${j.no}">Nilai Pemahaman:</label>
+                        <select id="pemahaman-select-${item.id}-${j.no}">
+                            <option value="Belum Dinilai" ${j.pemahaman === 'Belum Dinilai' ? 'selected' : ''}>Belum Dinilai</option>
+                            <option value="Tinggi" ${j.pemahaman === 'Tinggi' ? 'selected' : ''}>Tinggi</option>
+                            <option value="Sedang" ${j.pemahaman === 'Sedang' ? 'selected' : ''}>Sedang</option>
+                            <option value="Rendah" ${j.pemahaman === 'Rendah' ? 'selected' : ''}>Rendah</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+        });
+
+        const buttonsHtml = `
+            <div class="no-print" style="margin-top:20px; display:flex; gap:10px;">
+                <button class="btn-primary" onclick="savePemahaman(${item.id})">Simpan Penilaian</button>
+                <button class="btn-print" onclick="window.print()">Cetak</button>
+            </div>`;
+
+        modalBody.innerHTML = detailTableHtml + qaContent + buttonsHtml;
+        modal.style.display = 'block';
+    }
+
+    function savePemahaman(id) {
+        const itemIndex = db.findIndex(s => s.id === id);
+        if (itemIndex === -1) return;
+
+        const studentData = db[itemIndex];
+        let hasChanged = false;
+
+        studentData.jawaban.forEach((j, index) => {
+            const selectEl = document.getElementById(`pemahaman-select-${id}-${j.no}`);
+            if (selectEl && studentData.jawaban[index].pemahaman !== selectEl.value) {
+                studentData.jawaban[index].pemahaman = selectEl.value;
+                hasChanged = true;
+            }
+        });
+
+        if (hasChanged) {
+            db[itemIndex] = studentData;
+            localStorage.setItem('hasilAsesmenSiswa', JSON.stringify(db));
+            alert('Penilaian pemahaman berhasil disimpan!');
+        } else {
+            alert('Tidak ada perubahan untuk disimpan.');
+        }
+
+        closeModal();
+        updateTampilan();
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+    }
+    
+    window.onclick = function(event) {
+        if (event.target == modal) closeModal();
+    }
+
+    document.addEventListener('DOMContentLoaded', updateTampilan);
+</script>
+
+</body>
+</html>
