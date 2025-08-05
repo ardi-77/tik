@@ -1,1 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lembar Asesmen Diagnostik</title>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; }
+        .container { max-width: 900px; margin: 20px auto; padding: 30px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #0056b3; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .user-info { background-color: #eaf2ff; padding: 15px; border-radius: 5px; margin-bottom: 20px; font-weight: 500; }
+        
+        .question-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            background-color: #fafafa;
+        }
+        .question-card p.question { font-weight: 600; margin-bottom: 15px; font-size: 1.1em; }
+        .question-card textarea, .question-card select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-family: inherit;
+            font-size: 15px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+        .question-card label { font-weight: 500; display: block; margin-bottom: 5px; }
+        
+        button[type="submit"] {
+            display: block; width: 100%; padding: 15px; background: linear-gradient(to right, #28a745, #218838); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 20px; transition: opacity 0.3s;
+        }
+        button[type="submit"]:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Lembar Asesmen Diagnostik</h1>
+    <div class="user-info">
+        Nama: <span id="displayNama"></span> | Kelas: <span id="displayKelas"></span>
+    </div>
+    <p><b>Instruksi:</b> Jawablah pertanyaan-pertanyaan berikut dengan jujur berdasarkan pengetahuan dan pengalaman yang kamu miliki.</p>
+
+    <form id="quizForm" onsubmit="submitQuiz(event)">
+        <!-- Pertanyaan akan di-generate oleh JavaScript -->
+    </form>
+    
+    <button type="submit" form="quizForm">Kirim Jawaban</button>
+</div>
+
+<script>
+    const namaSiswa = sessionStorage.getItem('siswaNama');
+    const kelasSiswa = sessionStorage.getItem('siswaKelas');
+
+    if (!namaSiswa || !kelasSiswa) {
+        alert('Anda harus login sebagai siswa terlebih dahulu.');
+        window.location.href = 'index.html';
+    } else {
+        document.getElementById('displayNama').textContent = namaSiswa;
+        document.getElementById('displayKelas').textContent = kelasSiswa;
+    }
+
+    const questions = [
+        { no: 1, text: 'Apa yang kamu ketahui tentang teknik memecah masalah menjadi bagian-bagian kecil?', type: 'isian' },
+        { no: 2, text: 'Pernahkah kamu membagi tugas besar menjadi langkah-langkah kecil? Jelaskan contohnya.', type: 'isian' },
+        { no: 3, text: 'Ketika menghadapi masalah kompleks, langkah apa yang biasanya kamu lakukan pertama kali?', type: 'isian' },
+        { no: 4, text: 'Apa manfaat menurutmu dari memecah masalah menjadi bagian lebih kecil dan sederhana?', type: 'isian' },
+        { no: 5, text: 'Dalam kelompok, bagaimana kamu biasanya bekerja? Berikan Alasan?', type: 'pilihan_isian', options: ['Kolaboratif', 'Menunggu arahan', 'Inisiatif'] },
+        { no: 6, text: 'Menurutmu, apakah teknologi dapat membantu menyelesaikan masalah sehari-hari? Berikan contohnya.', type: 'isian' }
+    ];
+
+    function generateQuestions() {
+        const form = document.getElementById('quizForm');
+        questions.forEach(q => {
+            let answerField = '';
+            if (q.type === 'isian') {
+                answerField = `<textarea name="jawaban_${q.no}" rows="4" required></textarea>`;
+            } else if (q.type === 'pilihan_isian') {
+                const optionsHtml = q.options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                answerField = `
+                    <label for="jawaban_pilihan_${q.no}">Cara Bekerja:</label>
+                    <select name="jawaban_pilihan_${q.no}" id="jawaban_pilihan_${q.no}" required>
+                        <option value="" disabled selected>-- Pilih Cara Bekerja --</option>
+                        ${optionsHtml}
+                    </select>
+                    <label for="jawaban_alasan_${q.no}">Alasan:</label>
+                    <textarea name="jawaban_alasan_${q.no}" id="jawaban_alasan_${q.no}" rows="3" placeholder="Berikan alasanmu di sini..." required></textarea>
+                `;
+            }
+
+            // [REVISED] Menghilangkan pilihan tingkat pemahaman untuk siswa
+            const questionHtml = `
+                <div class="question-card">
+                    <p class="question">${q.no}. ${q.text}</p>
+                    ${answerField}
+                </div>
+            `;
+            form.innerHTML += questionHtml;
+        });
+    }
+
+    function submitQuiz(event) {
+        event.preventDefault();
+        const form = document.getElementById('quizForm');
+        const formData = new FormData(form);
+        
+        const answers = questions.map(q => {
+            let jawaban;
+            if (q.type === 'pilihan_isian') {
+                jawaban = {
+                    pilihan: formData.get(`jawaban_pilihan_${q.no}`),
+                    alasan: formData.get(`jawaban_alasan_${q.no}`)
+                };
+            } else {
+                jawaban = formData.get(`jawaban_${q.no}`);
+            }
+            return {
+                no: q.no,
+                pertanyaan: q.text,
+                jawaban: jawaban,
+                // [REVISED] Set pemahaman default ke "Belum Dinilai"
+                pemahaman: 'Belum Dinilai'
+            };
+        });
+
+        const db = JSON.parse(localStorage.getItem('hasilAsesmenSiswa'));
+        
+        const hasilSiswa = {
+            id: Date.now(),
+            nama: namaSiswa,
+            kelas: kelasSiswa,
+            jawaban: answers
+        };
+        
+        db.push(hasilSiswa);
+        localStorage.setItem('hasilAsesmenSiswa', JSON.stringify(db));
+        
+        sessionStorage.removeItem('siswaNama');
+        sessionStorage.removeItem('siswaKelas');
+        
+        alert('Terima kasih! Jawaban Anda telah disimpan.');
+        window.location.href = 'index.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', generateQuestions);
+</script>
+
+</body>
+</html>
 
