@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lembar Observasi Kesiapan Murid</title>
+    <!-- Library untuk Export PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            .print-area, .print-area * { visibility: visible; }
+            .print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+            .no-print { display: none !important; }
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; }
+        .container { max-width: 1100px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h2, h3 { color: #0056b3; }
+        h1 { border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        .header-controls { display: flex; justify-content: space-between; align-items: center; }
+        
+        fieldset { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 25px; }
+        legend { font-weight: bold; color: #0056b3; padding: 0 10px; font-size: 1.2em; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-weight: 600; margin-bottom: 5px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-family: inherit; font-size: 15px; box-sizing: border-box;
+        }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; vertical-align: top; }
+        th { background-color: #f2f2f2; }
+        
+        button { padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; color: white; transition: background-color 0.3s; font-size: 16px; font-weight: bold; }
+        .btn-primary { background-color: #28a745; }
+        .btn-secondary { background-color: #007bff; }
+        .btn-info { background-color: #17a2b8; }
+        .btn-warning { background-color: #ffc107; color: #212529; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-logout { background-color: #6c757d; }
+        .action-buttons { display: flex; gap: 5px; }
+
+        .kalkulasi-hasil { background-color: #eaf2ff; padding: 15px; border-radius: 8px; margin-top: 20px; }
+        .kalkulasi-hasil p { margin: 5px 0; }
+        .kalkulasi-hasil strong { color: #0056b3; }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 25px; border: 1px solid #888; width: 80%; max-width: 900px; border-radius: 8px; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+
+        .detail-table {
+            width: 100%;
+            margin-bottom: 25px;
+            border-collapse: collapse;
+        }
+        .detail-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            vertical-align: top;
+        }
+        .detail-table td:first-child {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            width: 30%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-controls no-print">
+        <h1>Lembar Observasi Kesiapan Murid</h1>
+        <div class="action-buttons">
+            <button class="btn-danger" onclick="clearAllData()">Hapus Seluruh Data</button>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <!-- FORMULIR PENILAIAN -->
+    <fieldset class="no-print" id="formContainer">
+        <legend id="formLegend">Formulir Observasi Baru</legend>
+        <form id="observationForm" onsubmit="saveObservation(event)">
+            <input type="hidden" id="observationId">
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="topik">Topik / Materi</label>
+                    <input type="text" id="topik" required>
+                </div>
+                <div class="form-group">
+                    <label for="tujuanPembelajaran">Tujuan Pembelajaran</label>
+                    <input type="text" id="tujuanPembelajaran" required>
+                </div>
+                <div class="form-group">
+                    <label for="kelas">Pilih Kelas</label>
+                    <select id="kelas" required>
+                        <option value="" disabled selected>-- Pilih Kelas --</option>
+                        <option value="X TKPI">X TKPI</option>
+                        <option value="X NKPI A">X NKPI A</option>
+                        <option value="X NKPI B">X NKPI B</option>
+                        <option value="X TSM A">X TSM A</option>
+                        <option value="X TSM B">X TSM B</option>
+                        <option value="X APAT A">X APAT A</option>
+                        <option value="X APAT B">X APAT B</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tanggal">Tanggal Observasi</label>
+                    <input type="date" id="tanggal" required>
+                </div>
+            </div>
+            
+            <h3>Indikator Observasi Kesiapan Murid</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Aspek Kesiapan</th>
+                        <th>Indikator yang Diamati</th>
+                        <th>Skor (1-4)</th>
+                        <th>Catatan Guru</th>
+                    </tr>
+                </thead>
+                <tbody id="aspekTableBody">
+                    <!-- Aspek akan di-generate oleh JavaScript -->
+                </tbody>
+            </table>
+            
+            <div id="kalkulasiHasil" class="kalkulasi-hasil">
+                <p><strong>Total Skor:</strong> <span id="totalSkorValue">0</span></p>
+                <p><strong>Tingkat Kesiapan:</strong> <span id="kesiapanValue">-</span></p>
+                <p><strong>Rekomendasi Tindak Lanjut:</strong> <span id="rekomendasiValue">-</span></p>
+            </div>
+            
+            <div class="form-group" style="margin-top:20px;">
+                <label for="catatanTambahan">Catatan Tambahan Guru:</label>
+                <textarea id="catatanTambahan" rows="4"></textarea>
+            </div>
+            
+            <div class="action-buttons">
+                <button type="submit" id="btnSave" class="btn-primary">Simpan Observasi</button>
+                <button type="button" id="btnCancel" class="btn-logout" onclick="cancelEdit()" style="display:none;">Batal Ubah</button>
+            </div>
+        </form>
+    </fieldset>
+
+    <!-- LAPORAN HASIL OBSERVASI -->
+    <div id="reportSection">
+        <h2>Laporan Hasil Observasi</h2>
+        <div class="form-group no-print">
+            <label for="filterKelas">Filter Laporan Berdasarkan Kelas</label>
+            <select id="filterKelas" onchange="loadObservations()">
+                <option value="semua">Tampilkan Semua</option>
+                <option value="X TKPI">X TKPI</option>
+                <option value="X NKPI A">X NKPI A</option>
+                <option value="X NKPI B">X NKPI B</option>
+                <option value="X TSM A">X TSM A</option>
+                <option value="X TSM B">X TSM B</option>
+                <option value="X APAT A">X APAT A</option>
+                <option value="X APAT B">X APAT B</option>
+            </select>
+        </div>
+        <table id="reportTable">
+            <thead>
+                <tr>
+                    <th>Kelas</th>
+                    <th>Tanggal</th>
+                    <th>Topik</th>
+                    <th>Total Skor</th>
+                    <th>Tingkat Kesiapan</th>
+                    <th class="no-print">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="reportTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal untuk Detail & Cetak -->
+<div id="detailModal" class="modal">
+    <div class="modal-content">
+        <span class="close no-print" onclick="closeModal()">&times;</span>
+        <div id="modalBody" class="print-area"></div>
+    </div>
+</div>
+
+<script>
+    if (sessionStorage.getItem('guruLoggedInObservasi') !== 'true') {
+        alert('Akses ditolak. Silakan login terlebih dahulu.');
+        window.location.href = 'index.html';
+    }
+
+    const aspekObservasi = [
+        { id: 1, aspek: 'Kognitif (Pemahaman Awal)', indikator: 'Menunjukkan pemahaman awal tentang pemecahan masalah atau strategi langkah demi langkah' },
+        { id: 2, aspek: 'Afektif (Minat dan Antusias)', indikator: 'Antusias dan penasaran dalam menghadapi aktivitas pemecahan masalah' },
+        { id: 3, aspek: 'Kolaborasi', indikator: 'Mau bekerja sama dalam kelompok dan menyampaikan pendapat' },
+        { id: 4, aspek: 'Komunikasi', indikator: 'Menjelaskan pemikiran atau pengalaman pribadi dengan jelas dan runtut' },
+        { id: 5, aspek: 'Kemandirian Belajar', indikator: 'Mencoba mencari solusi sendiri sebelum bertanya' }
+    ];
+
+    function calculateTotal() {
+        let totalSkor = 0;
+        aspekObservasi.forEach(item => {
+            const skorSelect = document.getElementById(`skor_${item.id}`);
+            totalSkor += parseInt(skorSelect.value) || 0;
+        });
+
+        document.getElementById('totalSkorValue').textContent = totalSkor;
+        
+        const { kesiapan, rekomendasi } = getKesiapanAndRekomendasi(totalSkor);
+        document.getElementById('kesiapanValue').textContent = kesiapan;
+        document.getElementById('rekomendasiValue').textContent = rekomendasi;
+    }
+
+    function generateAspekTable() {
+        const tableBody = document.getElementById('aspekTableBody');
+        aspekObservasi.forEach(item => {
+            const row = `
+                <tr>
+                    <td>${item.id}</td>
+                    <td>${item.aspek}</td>
+                    <td>${item.indikator}</td>
+                    <td>
+                        <select id="skor_${item.id}" onchange="calculateTotal()" required>
+                            <option value="0" disabled selected>-- Pilih Skor --</option>
+                            <option value="1">1 = Belum Tampak</option>
+                            <option value="2">2 = Mulai Tampak</option>
+                            <option value="3">3 = Cukup Tampak</option>
+                            <option value="4">4 = Sangat Tampak</option>
+                        </select>
+                    </td>
+                    <td><textarea id="catatan_${item.id}" rows="3"></textarea></td>
+                </tr>
+            `;
+            tableBody.innerHTML += row;
+        });
+    }
+
+    function saveObservation(event) {
+        event.preventDefault();
+        const observationId = document.getElementById('observationId').value;
+        
+        const aspekData = aspekObservasi.map(item => ({
+            id: item.id,
+            aspek: item.aspek,
+            indikator: item.indikator,
+            skor: document.getElementById(`skor_${item.id}`).value,
+            catatan: document.getElementById(`catatan_${item.id}`).value
+        }));
+
+        const totalSkor = aspekData.reduce((sum, item) => sum + parseInt(item.skor || 0), 0);
+        const { kesiapan, rekomendasi } = getKesiapanAndRekomendasi(totalSkor);
+
+        const observasiData = {
+            id: observationId ? parseInt(observationId) : Date.now(),
+            topik: document.getElementById('topik').value,
+            tujuanPembelajaran: document.getElementById('tujuanPembelajaran').value,
+            kelas: document.getElementById('kelas').value,
+            tanggal: document.getElementById('tanggal').value,
+            aspek: aspekData,
+            totalSkor: totalSkor,
+            kesiapan: kesiapan,
+            rekomendasi: rekomendasi,
+            catatanTambahan: document.getElementById('catatanTambahan').value
+        };
+
+        const db = JSON.parse(localStorage.getItem('observasiDataLKM')) || [];
+        
+        if (observationId) {
+            const index = db.findIndex(item => item.id === parseInt(observationId));
+            db[index] = observasiData;
+            alert('Data observasi berhasil diperbarui!');
+        } else {
+            db.push(observasiData);
+            alert('Data observasi berhasil disimpan!');
+        }
+        
+        localStorage.setItem('observasiDataLKM', JSON.stringify(db));
+        cancelEdit();
+        loadObservations();
+    }
+
+    function loadObservations() {
+        const filter = document.getElementById('filterKelas').value;
+        const db = JSON.parse(localStorage.getItem('observasiDataLKM')) || [];
+        const tableBody = document.getElementById('reportTableBody');
+        tableBody.innerHTML = '';
+
+        const filteredData = db.filter(item => filter === 'semua' || item.kelas === filter);
+
+        if (filteredData.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Belum ada data observasi.</td></tr>`;
+        } else {
+            filteredData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+            filteredData.forEach(item => {
+                const row = `
+                    <tr>
+                        <td>${item.kelas}</td>
+                        <td>${new Date(item.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</td>
+                        <td>${item.topik}</td>
+                        <td>${item.totalSkor}</td>
+                        <td>${item.kesiapan}</td>
+                        <td class="no-print">
+                            <div class="action-buttons">
+                                <button class="btn-secondary" onclick="showDetail(${item.id})">Lihat</button>
+                                <button class="btn-warning" onclick="editObservation(${item.id})">Ubah</button>
+                                <button class="btn-danger" onclick="deleteObservation(${item.id})">Hapus</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+    }
+
+    function editObservation(id) {
+        const db = JSON.parse(localStorage.getItem('observasiDataLKM')) || [];
+        const item = db.find(obs => obs.id === id);
+        if (!item) return;
+
+        document.getElementById('observationId').value = item.id;
+        document.getElementById('topik').value = item.topik;
+        document.getElementById('tujuanPembelajaran').value = item.tujuanPembelajaran;
+        document.getElementById('kelas').value = item.kelas;
+        document.getElementById('tanggal').value = item.tanggal;
+        document.getElementById('catatanTambahan').value = item.catatanTambahan;
+
+        item.aspek.forEach(aspek => {
+            document.getElementById(`skor_${aspek.id}`).value = aspek.skor;
+            document.getElementById(`catatan_${aspek.id}`).value = aspek.catatan;
+        });
+        
+        calculateTotal();
+        document.getElementById('formLegend').textContent = 'Ubah Data Observasi';
+        document.getElementById('btnSave').textContent = 'Update Data';
+        document.getElementById('btnCancel').style.display = 'inline-block';
+        document.getElementById('formContainer').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+        document.getElementById('observationForm').reset();
+        document.getElementById('observationId').value = '';
+        document.getElementById('formLegend').textContent = 'Formulir Observasi Baru';
+        document.getElementById('btnSave').textContent = 'Simpan Observasi';
+        document.getElementById('btnCancel').style.display = 'none';
+        calculateTotal();
+    }
+
+    function deleteObservation(id) {
+        if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+            let db = JSON.parse(localStorage.getItem('observasiDataLKM')) || [];
+            db = db.filter(item => item.id !== id);
+            localStorage.setItem('observasiDataLKM', JSON.stringify(db));
+            alert('Data berhasil dihapus.');
+            loadObservations();
+        }
+    }
+    
+    function clearAllData() {
+        if (confirm('APAKAH ANDA YAKIN INGIN MENGHAPUS SELURUH DATA OBSERVASI? TINDAKAN INI TIDAK DAPAT DIBATALKAN.')) {
+            localStorage.removeItem('observasiDataLKM');
+            alert('Seluruh data berhasil dihapus.');
+            loadObservations();
+        }
+    }
+
+    const modal = document.getElementById('detailModal');
+    function showDetail(id) {
+        const db = JSON.parse(localStorage.getItem('observasiDataLKM')) || [];
+        const item = db.find(obs => obs.id === id);
+        const modalBody = document.getElementById('modalBody');
+
+        let aspekHtml = '';
+        item.aspek.forEach(aspek => {
+            aspekHtml += `
+                <tr>
+                    <td>${aspek.id}</td>
+                    <td>${aspek.aspek}</td>
+                    <td>${aspek.indikator}</td>
+                    <td>${aspek.skor}</td>
+                    <td>${aspek.catatan || '-'}</td>
+                </tr>
+            `;
+        });
+        
+        const detailInfoHtml = `
+            <h2>Detail Laporan Observasi</h2>
+            <table class="detail-table">
+                <tr><td>Topik / Materi</td><td>${item.topik}</td></tr>
+                <tr><td>Tujuan Pembelajaran</td><td>${item.tujuanPembelajaran}</td></tr>
+                <tr><td>Kelas</td><td>${item.kelas}</td></tr>
+                <tr><td>Tanggal Observasi</td><td>${new Date(item.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</td></tr>
+            </table>
+        `;
+
+        modalBody.innerHTML = `
+            ${detailInfoHtml}
+            <h3>Indikator Observasi</h3>
+            <table style="width:100%; border-collapse:collapse;">
+                <thead><tr><th>No</th><th>Aspek</th><th>Indikator</th><th>Skor</th><th>Catatan</th></tr></thead>
+                <tbody>${aspekHtml}</tbody>
+            </table>
+            <div class="kalkulasi-hasil" style="margin-top: 20px;">
+                <p><strong>Total Skor:</strong> <span>${item.totalSkor}</span></p>
+                <p><strong>Tingkat Kesiapan:</strong> <span>${item.kesiapan}</span></p>
+                <p><strong>Rekomendasi Tindak Lanjut:</strong> <span>${item.rekomendasi}</span></p>
+            </div>
+            <p><strong>Catatan Tambahan:</strong> ${item.catatanTambahan || '-'}</p>
+            <div class="action-buttons no-print" style="margin-top:20px;">
+                <button class="btn-secondary" onclick="window.print()">Cetak</button>
+                <button class="btn-info" onclick="exportToPDF(${item.id})">Export PDF</button>
+            </div>
+        `;
+        modal.style.display = 'block';
+    }
+
+    // [REVISED] Fungsi Export PDF yang lebih robust
+    function exportToPDF(id) {
+        const db = JSON.parse(localStorage.getItem('observasiDataLKM')) || [];
+        const item = db.find(obs => obs.id === id);
+        const modalBody = document.getElementById('modalBody');
+
+        // Clone the element to avoid modifying the visible modal
+        const contentToPrint = modalBody.cloneNode(true);
+        
+        // Remove the buttons from the cloned element
+        const buttons = contentToPrint.querySelector('.action-buttons');
+        if (buttons) {
+            buttons.remove();
+        }
+
+        const opt = {
+          margin:       0.5,
+          filename:     `Observasi - ${item.kelas} - ${item.tanggal}.pdf`,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2 },
+          jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+        
+        html2pdf().from(contentToPrint).set(opt).save();
+    }
+
+    function getKesiapanAndRekomendasi(totalSkor) {
+        let kesiapan = '-';
+        let rekomendasi = '-';
+        if (totalSkor >= 5 && totalSkor <= 9) {
+            kesiapan = 'Kesiapan Rendah';
+            rekomendasi = 'Perlu penguatan konsep dasar, motivasi, dan pendampingan ekstra.';
+        } else if (totalSkor >= 10 && totalSkor <= 15) {
+            kesiapan = 'Kesiapan Sedang';
+            rekomendasi = 'Perlu penguatan praktik dan pengawasan dalam kerja kelompok.';
+        } else if (totalSkor >= 16 && totalSkor <= 20) {
+            kesiapan = 'Kesiapan Tinggi';
+            rekomendasi = 'Dapat diberi tugas mandiri lebih lanjut atau sebagai tutor sebaya.';
+        }
+        return { kesiapan, rekomendasi };
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+    }
+
+    function logout() {
+        sessionStorage.removeItem('guruLoggedInObservasi');
+        window.location.href = 'index.html';
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        generateAspekTable();
+        loadObservations();
+        calculateTotal();
+    });
+</script>
+
+</body>
+</html>
