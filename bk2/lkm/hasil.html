@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil LKM - Dasbor Guru</title>
+    <!-- [NEW] Library untuk Export PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            .print-area, .print-area * { visibility: visible; }
+            .print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+            .no-print { display: none !important; }
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; color: #333; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h2, h3 { color: #0056b3; }
+        h1 { border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .header-controls { display: flex; justify-content: space-between; align-items: center; }
+        
+        fieldset { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 25px; }
+        legend { font-weight: bold; color: #0056b3; padding: 0 10px; font-size: 1.2em; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-weight: 600; margin-bottom: 5px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-family: inherit; font-size: 15px; box-sizing: border-box;
+        }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; color: white; transition: background-color 0.3s; font-size: 14px; font-weight: 500; }
+        .btn-primary { background-color: #28a745; }
+        .btn-secondary { background-color: #007bff; }
+        .btn-warning { background-color: #ffc107; color: #212529; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-info { background-color: #17a2b8; }
+        .btn-logout { background-color: #6c757d; }
+        .action-buttons { display: flex; gap: 5px; }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 25px; border: 1px solid #888; width: 80%; max-width: 900px; border-radius: 8px; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .modal-body { max-height: 75vh; overflow-y: auto; }
+        .student-answer { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px; white-space: pre-wrap; }
+        .kalkulasi-hasil { background-color: #eaf2ff; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center; font-size: 1.2em; font-weight: bold; }
+        
+        .detail-table {
+            width: 100%;
+            margin-bottom: 25px;
+            border-collapse: collapse;
+        }
+        .detail-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            vertical-align: top;
+        }
+        .detail-table td:first-child {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            width: 25%;
+        }
+        .student-list {
+            background-color: #fff;
+            padding: 0;
+            margin: 0;
+            border: none;
+            white-space: pre-wrap;
+            font-family: inherit;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-controls no-print">
+        <h1>Dasbor Penilaian LKM</h1>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- LAPORAN HASIL -->
+    <div id="reportSection">
+        <h2>Laporan Hasil Lembar Kerja Murid</h2>
+        <div class="form-group no-print">
+            <label for="filterKelas">Filter Laporan Berdasarkan Kelas</label>
+            <select id="filterKelas" onchange="loadLKM()">
+                <option value="semua">Tampilkan Semua</option>
+                <option value="X TKPI">X TKPI</option>
+                <option value="X NKPI A">X NKPI A</option>
+                <option value="X NKPI B">X NKPI B</option>
+                <option value="X TSM A">X TSM A</option>
+                <option value="X TSM B">X TSM B</option>
+                <option value="X APAT A">X APAT A</option>
+                <option value="X APAT B">X APAT B</option>
+            </select>
+        </div>
+        <table id="reportTable">
+            <thead><tr><th>Kelas</th><th>Kelompok</th><th>Tanggal</th><th>Skor Akhir</th><th>Predikat</th><th class="no-print">Aksi</th></tr></thead>
+            <tbody id="reportTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal untuk Detail & Penilaian -->
+<div id="detailModal" class="modal">
+    <div class="modal-content">
+        <span class="close no-print" onclick="closeModal()">&times;</span>
+        <div id="modalBody" class="print-area"></div>
+    </div>
+</div>
+
+<script>
+    if (sessionStorage.getItem('guruLoggedInLKM') !== 'true') {
+        alert('Akses ditolak. Silakan login terlebih dahulu.');
+        window.location.href = 'index.html';
+    }
+
+    let db = JSON.parse(localStorage.getItem('hasilLKM')) || [];
+    const aspekPenilaianGuru = [
+        { id: 1, aspek: 'Pemahaman Masalah', indikator: 'Menyusun uraian masalah secara jelas dan sesuai konteks', maks: 10 },
+        { id: 2, aspek: 'Dekomposisi Masalah', indikator: 'Sub-masalah lengkap, relevan, dan terstruktur', maks: 25 },
+        { id: 3, aspek: 'Alur Solusi', indikator: 'Urutan logis dan dapat diimplementasikan secara sistematis', maks: 20 },
+        { id: 4, aspek: 'Kerja Sama dan Kolaborasi', indikator: 'Terlibat aktif dan adil dalam kerja kelompok', maks: 15 },
+        { id: 5, aspek: 'Refleksi dan Kemandirian', indikator: 'Memberikan pandangan pribadi yang bermakna dan logis', maks: 10 },
+        { id: 6, aspek: 'Presentasi (jika dilakukan)', indikator: 'Menyampaikan ide dengan jelas, runtut, dan komunikatif', maks: 20 }
+    ];
+    
+    const modal = document.getElementById('detailModal');
+
+    function getPredikat(skor) {
+        if (skor < 55) return 'Perlu Bimbingan';
+        if (skor <= 69) return 'Cukup';
+        if (skor <= 84) return 'Baik';
+        return 'Sangat Baik';
+    }
+
+    function loadLKM() {
+        const filter = document.getElementById('filterKelas').value;
+        const tableBody = document.getElementById('reportTableBody');
+        tableBody.innerHTML = '';
+        const filteredData = db.filter(item => filter === 'semua' || item.kelas === filter);
+
+        if (filteredData.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Belum ada data.</td></tr>`;
+        } else {
+            filteredData.sort((a, b) => b.id - a.id);
+            filteredData.forEach(item => {
+                const skorAkhir = item.penilaian ? item.penilaian.totalSkor : 'Belum Dinilai';
+                const predikat = item.penilaian ? item.penilaian.predikat : '-';
+                const row = `
+                    <tr>
+                        <td>${item.kelas}</td>
+                        <td>${item.kelompok}</td>
+                        <td>${new Date(item.id).toLocaleDateString('id-ID')}</td>
+                        <td>${skorAkhir}</td>
+                        <td>${predikat}</td>
+                        <td class="no-print">
+                            <div class="action-buttons">
+                                <button class="btn-secondary" onclick="showDetail(${item.id})">Lihat & Nilai</button>
+                                <button class="btn-danger" onclick="deleteLKM(${item.id})">Hapus</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+    }
+
+    function deleteLKM(id) {
+        if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+            db = db.filter(item => item.id !== id);
+            localStorage.setItem('hasilLKM', JSON.stringify(db));
+            loadLKM();
+        }
+    }
+
+    function showDetail(id) {
+        const item = db.find(lkm => lkm.id === id);
+        const modalBody = document.getElementById('modalBody');
+        
+        let dekomposisiHtml = '';
+        item.jawaban.dekomposisi.forEach(d => {
+            dekomposisiHtml += `<tr><td>${d.no}</td><td>${d.sub}</td><td>${d.ket}</td></tr>`;
+        });
+
+        let penilaianHtml = '';
+        aspekPenilaianGuru.forEach(a => {
+            const skor = item.penilaian ? item.penilaian.aspek.find(pa => pa.id === a.id).skor : '';
+            penilaianHtml += `
+                <tr>
+                    <td>${a.id}</td>
+                    <td>${a.aspek}</td>
+                    <td>${a.indikator}</td>
+                    <td>${a.maks}</td>
+                    <td class="no-print"><input type="number" id="skor_${a.id}" value="${skor}" min="0" max="${a.maks}" style="width: 60px;"></td>
+                </tr>
+            `;
+        });
+        
+        const skorAkhir = item.penilaian ? item.penilaian.totalSkor : 'Belum Dinilai';
+        const predikat = item.penilaian ? item.penilaian.predikat : '-';
+
+        const detailInfoHtml = `
+            <h2>Detail & Penilaian LKM</h2>
+            <table class="detail-table">
+                <tr><td><strong>Topik / Materi</strong></td><td>Latihan Dekomposisi Masalah</td></tr>
+                <tr><td><strong>Tujuan Pembelajaran</strong></td><td>Menerapkan teknik dekomposisi untuk memecah masalah.</td></tr>
+                <tr><td><strong>Kelas</strong></td><td>${item.kelas}</td></tr>
+                <tr><td><strong>Kelompok</strong></td><td>${item.kelompok}</td></tr>
+                <tr><td><strong>Tanggal</strong></td><td>${new Date(item.id).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</td></tr>
+                <tr><td colspan="2"><strong>Nama Siswa:</strong></td></tr>
+                <tr><td colspan="2"><pre class="student-list">${item.siswa}</pre></td></tr>
+                <tr><td><strong>Skor Akhir</strong></td><td><strong>${skorAkhir}</strong></td></tr>
+                <tr><td><strong>Predikat</strong></td><td><strong>${predikat}</strong></td></tr>
+            </table>
+        `;
+
+        modalBody.innerHTML = `
+            ${detailInfoHtml}
+            <h3>Jawaban Siswa</h3>
+            <h4>A. Identifikasi Masalah</h4>
+            <div class="student-answer">${item.jawaban.identifikasi}</div>
+            <h4>B. Dekomposisi Masalah</h4>
+            <table style="width:100%"><thead><tr><th>No</th><th>Sub-masalah</th><th>Keterangan</th></tr></thead><tbody>${dekomposisiHtml}</tbody></table>
+            <h4>C. Alur Solusi</h4>
+            <div class="student-answer">${item.jawaban.alurSolusi}</div>
+            <h4>D. Refleksi Individu</h4>
+            <div class="student-answer">${item.jawaban.refleksi}</div>
+            
+            <hr style="margin: 25px 0;">
+            <h3 class="no-print">Formulir Penilaian Guru</h3>
+            <table class="no-print"><thead><tr><th>No</th><th>Aspek</th><th>Indikator</th><th>Skor Maks</th><th>Skor</th></tr></thead><tbody>${penilaianHtml}</tbody></table>
+            <div class="form-group no-print" style="margin-top:15px;"><label for="catatanPenilaian">Catatan Penilaian</label><textarea id="catatanPenilaian" rows="3">${item.penilaian ? item.penilaian.catatan : ''}</textarea></div>
+            
+            <div class="action-buttons no-print" style="margin-top:20px;">
+                <button class="btn-primary" onclick="savePenilaian(${id})">Simpan Penilaian</button>
+                <button class="btn-secondary" onclick="window.print()">Cetak</button>
+                <button class="btn-info" onclick="exportToPDF(${id})">Export PDF</button>
+            </div>
+        `;
+        modal.style.display = 'block';
+    }
+
+    function savePenilaian(id) {
+        const index = db.findIndex(item => item.id === id);
+        if (index === -1) return;
+
+        let totalSkor = 0;
+        const aspekPenilaian = aspekPenilaianGuru.map(a => {
+            const skorInput = document.getElementById(`skor_${a.id}`);
+            const skor = skorInput.value ? parseInt(skorInput.value) : 0;
+            totalSkor += skor;
+            return { id: a.id, skor: skor };
+        });
+
+        db[index].penilaian = {
+            topik: "Latihan Dekomposisi Masalah",
+            tujuan: "Menerapkan teknik dekomposisi untuk memecah masalah.",
+            aspek: aspekPenilaian,
+            totalSkor: totalSkor,
+            predikat: getPredikat(totalSkor),
+            catatan: document.getElementById('catatanPenilaian').value
+        };
+
+        localStorage.setItem('hasilLKM', JSON.stringify(db));
+        alert('Penilaian berhasil disimpan!');
+        closeModal();
+        loadLKM();
+    }
+
+    function exportToPDF(id) {
+        const item = db.find(lkm => lkm.id === id);
+        const element = document.getElementById('modalBody');
+        const opt = {
+          margin:       0.5,
+          filename:     `LKM - ${item.kelompok} - ${item.kelas}.pdf`,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2 },
+          jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+        
+        html2pdf().from(element).set(opt).save();
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+    }
+
+    function logout() {
+        sessionStorage.removeItem('guruLoggedInLKM');
+        window.location.href = 'index.html';
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadLKM);
+</script>
+
+</body>
+</html>

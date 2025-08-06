@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lembar Kerja Murid</title>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; }
+        .container { max-width: 900px; margin: 20px auto; padding: 30px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h3 { color: #0056b3; }
+        h1 { border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .info-panel { background-color: #eaf2ff; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .info-panel p { margin: 0; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-weight: 600; margin-bottom: 5px; }
+
+        .task-section { margin-bottom: 25px; }
+        .task-section label { font-weight: 600; display: block; margin-bottom: 10px; font-size: 1.1em; }
+        .task-section textarea, .task-section table, .task-section select { width: 100%; box-sizing: border-box; }
+        .task-section textarea, .task-section select { padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-family: inherit; font-size: 15px; }
+        
+        table { border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 10px; }
+        th { background-color: #f2f2f2; }
+        td input[type="text"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        
+        button[type="submit"] {
+            display: block; width: 100%; padding: 15px; background: linear-gradient(to right, #28a745, #218838);
+            color: white; border: none; border-radius: 5px; cursor: pointer;
+            font-size: 18px; font-weight: bold; margin-top: 20px; transition: opacity 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Lembar Kerja Murid</h1>
+    <div class="info-panel">
+        <p><strong>Kelas:</strong> <span id="displayKelas"></span></p>
+    </div>
+    
+    <form id="lkmForm" onsubmit="submitLKM(event)">
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="namaKelompok">Nama Kelompok</label>
+                <select id="namaKelompok" required>
+                    <option value="" disabled selected>-- Pilih Kelompok --</option>
+                    <option value="Kelompok 1">Kelompok 1</option>
+                    <option value="Kelompok 2">Kelompok 2</option>
+                    <option value="Kelompok 3">Kelompok 3</option>
+                    <option value="Kelompok 4">Kelompok 4</option>
+                    <option value="Kelompok 5">Kelompok 5</option>
+                    <option value="Kelompok 6">Kelompok 6</option>
+                    <option value="Kelompok 7">Kelompok 7</option>
+                    <option value="Kelompok 8">Kelompok 8</option>
+                    <option value="Kelompok 9">Kelompok 9</option>
+                    <option value="Kelompok 10">Kelompok 10</option>
+                </select>
+            </div>
+            <div class="form-group">
+                 <label for="namaSiswa">Nama Siswa (1 nama per baris)</label>
+                 <textarea id="namaSiswa" rows="3" placeholder="Contoh:&#10;Budi Gunawan&#10;Ani Lestari" required></textarea>
+            </div>
+        </div>
+
+        <h3>Petunjuk Umum</h3>
+        <ol>
+            <li>LKPD ini dikerjakan secara berkelompok (2–3 orang).</li>
+            <li>Gunakan logika berpikir sistematis dalam menganalisis dan memecah masalah.</li>
+            <li>Diskusikan jawaban dengan anggota kelompok.</li>
+            <li>Presentasikan hasil kerja kalian di akhir sesi.</li>
+        </ol>
+        <h3>Studi Kasus</h3>
+        <p><strong>Masalah:</strong> Sekolah ingin membuat sistem manajemen kehadiran digital untuk siswa dan guru. Sistem ini harus bisa mencatat waktu datang, waktu pulang, dan memberikan laporan harian dan bulanan.</p>
+
+        <div class="task-section">
+            <label for="identifikasi">A. Identifikasi Masalah (Memahami)</label>
+            <textarea id="identifikasi" rows="4" required></textarea>
+        </div>
+
+        <div class="task-section">
+            <label>B. Lakukan Dekomposisi Masalah (Mengaplikasi)</label>
+            <table id="dekomposisiTable">
+                <thead><tr><th>No</th><th>Sub-masalah/Hal yang perlu dilakukan</th><th>Keterangan (Apa saja yang diperlukan?)</th></tr></thead>
+                <tbody>
+                    <tr><td>1</td><td><input type="text" name="dekomposisi_sub_1"></td><td><input type="text" name="dekomposisi_ket_1"></td></tr>
+                    <tr><td>2</td><td><input type="text" name="dekomposisi_sub_2"></td><td><input type="text" name="dekomposisi_ket_2"></td></tr>
+                    <tr><td>3</td><td><input type="text" name="dekomposisi_sub_3"></td><td><input type="text" name="dekomposisi_ket_3"></td></tr>
+                    <tr><td>4</td><td><input type="text" name="dekomposisi_sub_4"></td><td><input type="text" name="dekomposisi_ket_4"></td></tr>
+                    <tr><td>5</td><td><input type="text" name="dekomposisi_sub_5"></td><td><input type="text" name="dekomposisi_ket_5"></td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="task-section">
+            <label for="alurSolusi">C. Urutkan Sub-masalah menjadi Alur Solusi</label>
+            <textarea id="alurSolusi" rows="5" placeholder="Gunakan bullet point atau nomor..." required></textarea>
+        </div>
+
+        <div class="task-section">
+            <label for="refleksi">D. Refleksi Individu (Merefleksi)</label>
+            <textarea id="refleksi" rows="4" required></textarea>
+        </div>
+        
+        <button type="submit">Kirim Jawaban</button>
+    </form>
+</div>
+
+<script>
+    const kelas = sessionStorage.getItem('lkmKelas');
+
+    if (!kelas) {
+        alert('Anda harus memilih kelas terlebih dahulu.');
+        window.location.href = 'index.html';
+    } else {
+        document.getElementById('displayKelas').textContent = kelas;
+    }
+
+    function submitLKM(event) {
+        event.preventDefault();
+        
+        const dekomposisi = [];
+        for (let i = 1; i <= 5; i++) {
+            const sub = document.querySelector(`input[name="dekomposisi_sub_${i}"]`).value;
+            const ket = document.querySelector(`input[name="dekomposisi_ket_${i}"]`).value;
+            if (sub || ket) {
+                dekomposisi.push({ no: i, sub, ket });
+            }
+        }
+
+        const jawabanSiswa = {
+            identifikasi: document.getElementById('identifikasi').value,
+            dekomposisi: dekomposisi,
+            alurSolusi: document.getElementById('alurSolusi').value,
+            refleksi: document.getElementById('refleksi').value
+        };
+
+        const db = JSON.parse(localStorage.getItem('hasilLKM'));
+        
+        const hasilLKM = {
+            id: Date.now(),
+            kelas: kelas,
+            kelompok: document.getElementById('namaKelompok').value,
+            siswa: document.getElementById('namaSiswa').value,
+            jawaban: jawabanSiswa,
+            penilaian: null
+        };
+        
+        db.push(hasilLKM);
+        localStorage.setItem('hasilLKM', JSON.stringify(db));
+        
+        sessionStorage.clear();
+        alert('Terima kasih! Jawaban Anda telah disimpan.');
+        window.location.href = 'index.html';
+    }
+</script>
+
+</body>
+</html>
