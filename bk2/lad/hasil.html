@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hasil Asesmen - Dasbor Guru</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
     <style>
         @media print {
             body * { visibility: hidden; }
@@ -22,6 +23,7 @@
         .btn-logout { background-color: #6c757d; }
         .btn-print { background-color: #007bff; }
         .btn-primary { background-color: #28a745; }
+        .btn-info { background-color: #17a2b8; }
         .btn-delete-all { background-color: #dc3545; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -293,6 +295,7 @@
             <div class="no-print" style="margin-top:20px; display:flex; gap:10px;">
                 <button class="btn-primary" onclick="savePemahaman(${item.id})">Simpan Penilaian</button>
                 <button class="btn-print" onclick="window.print()">Cetak</button>
+                <button class="btn-info" onclick="exportToPDF(${item.id})">Export PDF</button>
             </div>`;
 
         modalBody.innerHTML = detailTableHtml + qaContent + buttonsHtml;
@@ -324,6 +327,20 @@
 
         closeModal();
         updateTampilan();
+    }
+
+    function exportToPDF(id) {
+        const item = db.find(s => s.id === id);
+        const element = document.getElementById('modalBody');
+        const opt = {
+          margin:       0.5,
+          filename:     `LAD - ${item.nama} - ${item.kelas}.pdf`,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2 },
+          jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+        
+        html2pdf().from(element).set(opt).save();
     }
 
     function closeModal() {
