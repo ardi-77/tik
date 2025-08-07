@@ -1,1 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Student Tasks</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Import Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
+/* Reset dan Pengaturan Dasar */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* === TAMPILAN DESKTOP (LAYAR LEBAR) === */
+
+.container {
+    display: flex;
+    width: 900px;
+    max-width: 95%;
+    height: 650px;
+    background: #fff;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.login-panel {
+    width: 50%;
+    padding: 40px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.welcome-panel {
+    width: 50%;
+    background: linear-gradient(45deg, #20c997, #1dc4e9);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    text-align: center;
+}
+
+.welcome-panel h2 {
+    font-size: 2.8rem;
+    margin-bottom: 1rem;
+}
+
+/* Bagian Profil */
+.profile-section {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #eee;
+    margin-bottom: 10px;
+}
+
+.profile-section h2 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.profile-section p {
+    color: #777;
+    font-size: 0.9rem;
+}
+
+/* Bagian Tab */
+.tabs {
+    display: flex;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #eee;
+}
+
+.tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #999;
+    position: relative;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.tab.active {
+    color: #20c997;
+}
+
+.tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #20c997;
+}
+
+/* Formulir Login */
+.form-login {
+    display: none;
+    flex-direction: column;
+}
+
+.form-login.active {
+    display: flex;
+}
+
+select,
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+}
+
+button[type="submit"] {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(45deg, #20c997, #1dc4e9);
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+
+/* === TAMPILAN MOBILE (LAYAR SEMPIT) === */
+/* Media query akan aktif jika lebar layar 768px atau kurang */
+
+@media (max-width: 768px) {
+    body {
+        /* Hapus align-items agar container bisa di-scroll */
+        align-items: flex-start; 
+    }
+
+    .container {
+        /* Ubah layout menjadi vertikal (menumpuk) */
+        flex-direction: column;
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .login-panel {
+        width: 100%;
+        /* Beri padding agar tidak terlalu mepet ke tepi layar */
+        padding: 40px 25px; 
+    }
+
+    .welcome-panel {
+        /* Sembunyikan panel ini di mobile untuk menghemat ruang */
+        display: none; 
+    }
+
+    .profile-avatar {
+        width: 85px;
+        height: 85px;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-panel">
+            <div class="profile-section">
+                <img src="avatar.jpg" alt="Foto Profil" class="profile-avatar" />           
+                <h2>Ardi</h2>
+                <p>SMK Negeri 1 Watulimo</p>
+            </div>
+            <div class="tabs">
+                <div class="tab active" id="tabSiswa">Siswa</div>
+                <div class="tab" id="tabGuru">Guru</div>
+            </div>
+
+            <form id="formSiswa" class="form-login active">
+                <select id="kelasSiswa" required>
+                    <option value="" disabled selected>Pilih Kelas</option>
+                    <option value="X TKPI">X TKPI</option>
+                    <option value="X NKPI A">X NKPI A</option>
+                    <option value="X NKPI B">X NKPI B</option>
+                    <option value="X TSM A">X TSM A</option>
+                    <option value="X TSM B">X TSM B</option>
+                    <option value="X APAT A">X APAT A</option>
+                    <option value="X APAT B">X APAT B</option>
+                    <option value="XII TKPI">XII TKPI</option>
+                </select>
+                <input type="text" id="namaSiswa" placeholder="Nama Lengkap" required>
+                <button type="submit">Masuk Sebagai Siswa</button>
+            </form>
+
+            <form id="formGuru" class="form-login">
+                <input type="password" id="passwordGuru" placeholder="Password Guru" required>
+                <button type="submit">Masuk Sebagai Guru</button>
+            </form>
+
+        </div>
+        <div class="welcome-panel">
+            <h2>Welcome!</h2>
+            <p>Silakan login sesuai dengan peran Anda untuk mengakses Pengiriman Tugas.</p>
+        </div>
+    </div>
+
+    <script>
+        const tabSiswa = document.getElementById('tabSiswa');
+        const tabGuru = document.getElementById('tabGuru');
+        const formSiswa = document.getElementById('formSiswa');
+        const formGuru = document.getElementById('formGuru');
+
+        tabSiswa.addEventListener('click', () => {
+            tabSiswa.classList.add('active');
+            tabGuru.classList.remove('active');
+            formSiswa.classList.add('active');
+            formGuru.classList.remove('active');
+        });
+
+        tabGuru.addEventListener('click', () => {
+            tabGuru.classList.add('active');
+            tabSiswa.classList.remove('active');
+            formGuru.classList.add('active');
+            formSiswa.classList.remove('active');
+        });
+
+        formSiswa.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nama = document.getElementById('namaSiswa').value;
+            const kelas = document.getElementById('kelasSiswa').value;
+            if (nama && kelas) {
+                const user = { role: 'siswa', nama, kelas };
+                sessionStorage.setItem('currentUser', JSON.stringify(user));
+                window.location.href = 'siswa.html';
+            } else {
+                alert('Nama dan Kelas harus diisi!');
+            }
+        });
+
+        formGuru.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const password = document.getElementById('passwordGuru').value;
+            if (password === 'Virus@215000') {
+                const user = { role: 'guru' };
+                sessionStorage.setItem('currentUser', JSON.stringify(user));
+                window.location.href = 'guru.html';
+            } else {
+                alert('Password salah!');
+            }
+        });
+    </script>
+</body>
+</html>
