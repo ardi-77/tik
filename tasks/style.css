@@ -1,0 +1,522 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* --- Halaman Login --- */
+.container {
+    display: flex;
+    width: 900px;
+    height: 600px;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.login-panel {
+    width: 50%;
+    padding: 50px 60px;
+    display: flex;
+    flex-direction: column;
+}
+
+.welcome-panel {
+    width: 50%;
+    background: linear-gradient(45deg, #1de9b6, #1dc4e9);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    text-align: center;
+}
+
+.welcome-panel h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.login-panel h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #eee;
+}
+
+.tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #999;
+    position: relative;
+}
+
+.tab.active {
+    color: #1de9b6;
+}
+
+.tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #1de9b6;
+}
+
+.form-login {
+    display: none;
+    flex-direction: column;
+}
+
+.form-login.active {
+    display: flex;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+}
+
+button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(45deg, #1de9b6, #1dc4e9);
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+/* --- Penyesuaian untuk Halaman Guru Baru --- */
+.page-container-full {
+    width: 95%;
+    max-width: 1400px;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    /*box-shadow: 0 5px 20px rgba(0,0,0,0.08);*/
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.header h1 {
+    margin: 0;
+}
+
+/* --- REVISI: Styling Baru untuk Filter Container --- */
+.filter-container {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 15px 25px; /* Jarak vertikal dan horizontal antar item */
+    padding: 20px;
+    background-color: #fff; /* Ubah background menjadi putih */
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    align-items: center; /* Sejajarkan semua item secara vertikal */
+}
+
+.filter-item {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Jarak antara label dan input */
+    flex-direction: row; /* Pastikan label di samping input */
+}
+
+.filter-item label {
+    flex-shrink: 0; /* Mencegah label terpotong */
+    font-weight: 500;
+    color: #495057;
+    font-size: 0.95rem;
+}
+
+.filter-item select, .filter-item input[type="date"] {
+    width: 180px; /* Atur lebar input agar seragam */
+    border: 1px solid #ced4da;
+}
+
+/* Penampung tombol filter */
+.filter-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-left: auto; /* Mendorong tombol ke paling kanan */
+}
+
+/* Tombol filter individual */
+.btn-filter {
+    padding: 8px 25px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+    width: 100%;
+    font-size: 0.9rem;
+}
+
+.btn-filter:hover {
+    transform: translateY(-1px);
+}
+
+.btn-filter.apply {
+    background: #20c997; /* Warna hijau toska cerah */
+}
+
+.btn-filter.reset {
+    background: #6c757d; /* Warna abu-abu netral */
+}
+/* --- Styling untuk DataTables --- */
+.table-responsive {
+    overflow-x: auto;
+}
+
+#tabelTugas th {
+    background-color: #1dc4e9;
+    color: white;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #1de9b6 !important;
+    color: white !important;
+    border-color: #1de9b6 !important;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    border-radius: 6px;
+    padding: 6px;
+    border: 1px solid #ccc;
+}
+
+.action-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.action-link:hover {
+    text-decoration: underline;
+}
+
+.grading-form input {
+    width: 100px;
+    padding: 6px;
+    font-size: 0.9rem;
+}
+
+.grading-form button {
+    padding: 6px 10px;
+    font-size: 0.9rem;
+}
+
+/* --- Halaman Siswa & Guru --- */
+.page-container {
+    width: 90%;
+    max-width: 1000px;
+    background: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    position: relative;
+}
+
+.logout-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    text-decoration: none;
+    background-color: #f44336;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.form-card {
+    background-color: #fafafa;
+    padding: 25px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    margin-top: 20px;
+}
+
+.form-card h2 {
+    margin-bottom: 15px;
+}
+
+/* --- Halaman Guru Spesifik --- */
+.danger-btn {
+    background: #e91e63;
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
+
+.warning-btn {
+    background: #e9d81e;
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
+
+
+.task-list {
+    margin-top: 20px;
+}
+
+.task-card {
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.task-card h3 {
+    color: #1dc4e9;
+}
+
+.task-card p {
+    margin: 5px 0;
+}
+
+.grading-form {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.grading-form input {
+    width: 150px;
+    margin-bottom: 0;
+}
+
+.grading-form button {
+    width: 150px;
+}
+/* --- Styling untuk Tabel Sederhana --- */
+.simple-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 0.95rem;
+}
+
+.simple-table th, .simple-table td {
+    border: 1px solid #ddd;
+    padding: 10px 12px;
+    text-align: left;
+}
+
+.simple-table thead {
+    background-color: #1dc4e9;
+    color: white;
+}
+
+.simple-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.simple-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.action-cell {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.action-btn {
+    padding: 5px 10px;
+    font-size: 0.85rem;
+    border-radius: 5px;
+}
+.view-btn {
+    background-color: #007bff;
+}
+.delete-btn {
+    background-color: #dc3545;
+}
+
+
+/* --- Styling untuk Modal --- */
+.modal {
+    display: none; /* Sembunyikan default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 25px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 10px;
+    position: relative;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: scale(0.95);}
+    to {opacity: 1; transform: scale(1);}
+}
+
+.close-button {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+}
+
+.modal-image-container {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+#modalTaskImage {
+    max-width: 100%;
+    max-height: 400px;
+    display: block;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* --- Styling untuk Tabel di dalam Modal --- */
+.modal-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0 20px 0;
+}
+
+.modal-table td {
+    padding: 10px;
+    border: 1px solid #e9e9e9;
+}
+
+.modal-table .label {
+    font-weight: 600;
+    width: 120px; /* Lebar kolom label */
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* --- Penyesuaian untuk Tata Letak Header --- */
+.header-actions {
+    display: flex;
+    gap: 15px; /* Memberi jarak antar tombol */
+    align-items: center;
+}
+
+.header-actions .logout-btn {
+    position: static; /* Menghapus posisi absolut sebelumnya */
+    display: inline-block;
+}
+
+/* --- Penyesuaian untuk Simple-DataTables --- */
+.datatable-selector, .datatable-input {
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+.datatable-wrapper {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+.datatable-table {
+    --datatable-heading-background: #1dc4e9; /* Warna header tabel */
+    --datatable-heading-color: #fff;
+}
+
+/* --- Penyesuaian untuk Filter Container --- */
+.filter-container {
+    display: flex;
+    flex-wrap: wrap; /* Agar filter turun ke bawah jika tidak muat */
+    gap: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    align-items: flex-end; /* Agar tombol sejajar dengan input */
+}
+
+.filter-item {
+    display: flex;
+    flex-direction: column; /* Label di atas input */
+    gap: 5px;
+}
+
+.filter-item label {
+    font-weight: 600;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.filter-item select, .filter-item input[type="date"] {
+    margin-bottom: 0;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.filter-item .action-btn {
+    padding: 9px 15px;
+    margin-bottom: 0;
+}

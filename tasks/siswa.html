@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Siswa</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="page-container">
+        <h1 id="welcomeMessage"></h1>
+        <a href="index.html" class="logout-btn">Logout</a>
+
+        <div class="form-card">
+            <h2>Kirim Tugas Baru</h2>
+            <form id="formTugas">
+                <input type="text" id="namaTugas" placeholder="Nama Tugas" required>
+                <textarea id="deskripsiTugas" placeholder="Deskripsi Tugas" rows="4" required></textarea>
+                <label for="fileTugas">Upload File (Hanya Gambar)</label>
+                <input type="file" id="fileTugas" accept="image/*" required>
+                <button type="submit">Kirim Tugas</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Cek apakah user sudah login sebagai siswa
+        const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+        if (!currentUser || currentUser.role !== 'siswa') {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('welcomeMessage').innerText = `Selamat Datang, ${currentUser.nama} (${currentUser.kelas})`;
+
+        document.getElementById('formTugas').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const namaTugas = document.getElementById('namaTugas').value;
+            const deskripsi = document.getElementById('deskripsiTugas').value;
+            const fileInput = document.getElementById('fileTugas');
+
+            // Validasi input
+            if (!namaTugas || !deskripsi || fileInput.files.length === 0) {
+                Swal.fire({
+                    title: 'Data Tidak Lengkap',
+                    text: 'Nama tugas, deskripsi, dan file harus diisi!',
+                    icon: 'warning',
+                    confirmButtonColor: '#3085d6',
+                });
+                return;
+            }
+
+            // --- REVISI: Menggunakan SweetAlert untuk Konfirmasi ---
+            Swal.fire({
+                title: 'Konfirmasi Pengiriman',
+                text: "Apakah Anda yakin ingin mengirim tugas ini?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1de9b6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Kirim!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                // Jika pengguna menekan "Ya, Kirim!"
+                if (result.isConfirmed) {
+                    const file = fileInput.files[0];
+                    const reader = new FileReader();
+
+                    reader.onload = function(event) {
+                        const fileData = event.target.result;
+                        let tasks = JSON.parse(localStorage.getItem('studentTasks')) || [];
+
+                        const newTask = {
+                            id: Date.now(),
+                            namaSiswa: currentUser.nama,
+                            kelasSiswa: currentUser.kelas,
+                            namaTugas: namaTugas,
+                            deskripsi: deskripsi,
+                            file: fileData,
+                            fileName: file.name,
+                            nilai: "Belum Dinilai",
+                            timestamp: new Date().toISOString()
+                        };
+
+                        tasks.push(newTask);
+                        localStorage.setItem('studentTasks', JSON.stringify(tasks));
+
+                        // --- REVISI: Menggunakan SweetAlert untuk Pesan Sukses ---
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Terima kasih! Tugas Anda telah berhasil dikirim. 🙏',
+                            icon: 'success',
+                            timer: 2000, // Notifikasi hilang setelah 2 detik
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Kembali ke halaman login setelah notifikasi ditutup
+                            window.location.href = 'index.html';
+                        });
+                    };
+
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
