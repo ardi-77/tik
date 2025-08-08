@@ -87,7 +87,7 @@
         const password = document.getElementById('password').value;
         const errorElement = document.getElementById('guruError');
 
-        if (password === 'Virus@215') {
+        if (password === 'Virus@21500') {
             errorElement.textContent = '';
             // Tandai guru sudah login
             sessionStorage.setItem('role', 'guru');
@@ -96,6 +96,7 @@
             errorElement.textContent = 'Password salah!';
         }
     }
+    document.addEventListener('contextmenu', event => event.preventDefault());
 </script>
 
 </body>
