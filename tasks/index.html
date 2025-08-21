@@ -239,51 +239,32 @@ button[type="submit"]:hover {
         </div>
     </div>
 
-    <script>
-        const tabSiswa = document.getElementById('tabSiswa');
-        const tabGuru = document.getElementById('tabGuru');
-        const formSiswa = document.getElementById('formSiswa');
-        const formGuru = document.getElementById('formGuru');
+   <script>
+    function showForm(formName) {
+        document.querySelectorAll('.form-content').forEach(form => form.classList.remove('active'));
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(formName + '-form').classList.add('active');
+        document.querySelector(`.tab-button[onclick="showForm('${formName}')"]`).classList.add('active');
+    }
 
-        tabSiswa.addEventListener('click', () => {
-            tabSiswa.classList.add('active');
-            tabGuru.classList.remove('active');
-            formSiswa.classList.add('active');
-            formGuru.classList.remove('active');
-        });
+    function loginSiswa(event) {
+        event.preventDefault();
+        sessionStorage.setItem('aumKelas', document.getElementById('kelas').value);
+        sessionStorage.setItem('aumNama', document.getElementById('nama').value);
+        window.location.href = 'aum.html';
+    }
 
-        tabGuru.addEventListener('click', () => {
-            tabGuru.classList.add('active');
-            tabSiswa.classList.remove('active');
-            formGuru.classList.add('active');
-            formSiswa.classList.remove('active');
-        });
-
-        formSiswa.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const nama = document.getElementById('namaSiswa').value;
-            const kelas = document.getElementById('kelasSiswa').value;
-            if (nama && kelas) {
-                const user = { role: 'siswa', nama, kelas };
-                sessionStorage.setItem('currentUser', JSON.stringify(user));
-                window.location.href = 'siswa.html';
-            } else {
-                alert('Nama dan Kelas harus diisi!');
-            }
-        });
-
-        formGuru.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const password = document.getElementById('passwordGuru').value;
-            if (password === 'Virus@215000') {
-                const user = { role: 'guru' };
-                sessionStorage.setItem('currentUser', JSON.stringify(user));
-                window.location.href = 'guru.html';
-            } else {
-                alert('Password salah!');
-            }
-        });
-        document.addEventListener('contextmenu', event => event.preventDefault());
-    </script>
+    function loginGuru(event) {
+        event.preventDefault();
+        const password = document.getElementById('password').value;
+        const errorElement = document.getElementById('guruError');
+        if (password === 'Jianjar@000') { // Ganti dengan password Anda
+            sessionStorage.setItem('guruLoggedInAUM', 'true');
+            window.location.href = 'hasil.html';
+        } else {
+            errorElement.textContent = 'Password salah!';
+        }
+    }
+</script>
 </body>
 </html>
