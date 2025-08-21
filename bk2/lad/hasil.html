@@ -109,12 +109,16 @@
 </div>
 
 <script>
+    // --- PASTE YOUR DEPLOYED WEB APP URL HERE ---
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqvKoPWcqEBrBGW_5HBvgk3ReyDn3C93qQLMiMfdp54_A0eY8nEjFcRs7iQAQynKQV4Q/exec"; 
+    // ---------------------------------------------
+
     if (sessionStorage.getItem('guruLoggedInAsesmen') !== 'true') {
         alert('Akses ditolak. Silakan login.');
         window.location.href = 'index.html';
     }
 
-    let db = JSON.parse(localStorage.getItem('hasilAsesmenSiswa')) || [];
+    let db = [];
     let activeCharts = [];
 
     const questions = [
@@ -126,17 +130,45 @@
         { no: 6, text: 'Menurutmu, apakah teknologi dapat membantu menyelesaikan masalah sehari-hari? Berikan contohnya.' }
     ];
 
+    function fetchDataAndRender() {
+        document.getElementById('hasilTableBody').innerHTML = `<tr><td colspan="4" style="text-align:center;">Memuat data...</td></tr>`;
+        fetch(SCRIPT_URL)
+            .then(response => response.json())
+            .then(data => {
+                db = data;
+                updateTampilan();
+            })
+            .catch(error => {
+                console.error("Error fetching data:", error);
+                document.getElementById('hasilTableBody').innerHTML = `<tr><td colspan="4" style="text-align:center;">Gagal memuat data. Periksa koneksi atau URL Script.</td></tr>`;
+            });
+    }
+
     function logout() {
         sessionStorage.removeItem('guruLoggedInAsesmen');
         window.location.href = 'index.html';
     }
 
     function clearAllData() {
-        if (confirm("Apakah Anda yakin ingin menghapus seluruh data asesmen? Tindakan ini tidak dapat dibatalkan.")) {
-            localStorage.removeItem('hasilAsesmenSiswa');
-            db = [];
-            alert("Seluruh data telah dihapus.");
-            updateTampilan();
+        if (confirm("Apakah Anda yakin ingin menghapus seluruh data asesmen dari Google Sheet? Tindakan ini tidak dapat dibatalkan.")) {
+            const payload = { action: 'deleteAll' };
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success'){
+                    alert("Seluruh data telah dihapus.");
+                    fetchDataAndRender(); // Refresh data from sheet
+                } else {
+                    throw new Error(data.message);
+                }
+            })
+            .catch(error => {
+                alert('Gagal menghapus data: ' + error.message);
+            });
         }
     }
 
@@ -221,14 +253,7 @@
         const ctx = document.getElementById(canvasId).getContext('2d');
         const chart = new Chart(ctx, {
             type: type,
-            data: {
-                labels: Object.keys(data),
-                datasets: [{
-                    label: 'Jumlah Siswa',
-                    data: Object.values(data),
-                    backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(255, 206, 86, 0.7)', 'rgba(255, 99, 132, 0.7)', 'rgba(201, 203, 207, 0.7)'],
-                }]
-            },
+            data: { labels: Object.keys(data), datasets: [{ label: 'Jumlah Siswa', data: Object.values(data), backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(255, 206, 86, 0.7)', 'rgba(255, 99, 132, 0.7)', 'rgba(201, 203, 207, 0.7)'] }] },
             options: { indexAxis: 'y', plugins: { legend: { display: false } } }
         });
         activeCharts.push(chart);
@@ -239,41 +264,20 @@
         const item = db.find(s => s.id === id);
         const modalBody = document.getElementById('modalBody');
         
-        // [REVISED] Tampilan detail dengan tabel interaktif
         const detailTableHtml = `
             <h2>Detail Asesmen Siswa</h2>
             <table class="detail-table">
-                <tr>
-                    <td>Topik / Materi</td>
-                    <td>Latihan Dekomposisi Masalah</td>
-                </tr>
-                <tr>
-                    <td>Tujuan Pembelajaran</td>
-                    <td>Mengetahui tingkat pemahaman awal siswa terhadap konsep dekomposisi dalam berpikir komputasional dan kesiapan mengikuti pembelajaran mendalam.</td>
-                </tr>
-                <tr>
-                    <td>Nama Siswa</td>
-                    <td>${item.nama}</td>
-                </tr>
-                <tr>
-                    <td>Kelas</td>
-                    <td>${item.kelas}</td>
-                </tr>
-                <tr>
-                    <td>Tanggal Pengerjaan</td>
-                    <td>${new Date(item.id).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</td>
-                </tr>
+                <tr><td>Topik / Materi</td><td>Latihan Dekomposisi Masalah</td></tr>
+                <tr><td>Tujuan Pembelajaran</td><td>Mengetahui tingkat pemahaman awal siswa terhadap konsep dekomposisi dalam berpikir komputasional dan kesiapan mengikuti pembelajaran mendalam.</td></tr>
+                <tr><td>Nama Siswa</td><td>${item.nama}</td></tr>
+                <tr><td>Kelas</td><td>${item.kelas}</td></tr>
+                <tr><td>Tanggal Pengerjaan</td><td>${new Date(item.id).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</td></tr>
             </table>
         `;
 
         let qaContent = '<h3>Jawaban Siswa</h3>';
         item.jawaban.forEach(j => {
-            let jawabanText = '';
-            if (typeof j.jawaban === 'object') {
-                jawabanText = `<b>Pilihan:</b> ${j.jawaban.pilihan}<br><b>Alasan:</b> ${j.jawaban.alasan}`;
-            } else {
-                jawabanText = j.jawaban;
-            }
+            let jawabanText = (typeof j.jawaban === 'object') ? `<b>Pilihan:</b> ${j.jawaban.pilihan}<br><b>Alasan:</b> ${j.jawaban.alasan}` : j.jawaban;
             qaContent += `
                 <div class="qa-block">
                     <p class="question">${j.no}. ${j.pertanyaan}</p>
@@ -287,8 +291,7 @@
                             <option value="Rendah" ${j.pemahaman === 'Rendah' ? 'selected' : ''}>Rendah</option>
                         </select>
                     </div>
-                </div>
-            `;
+                </div>`;
         });
 
         const buttonsHtml = `
@@ -306,7 +309,7 @@
         const itemIndex = db.findIndex(s => s.id === id);
         if (itemIndex === -1) return;
 
-        const studentData = db[itemIndex];
+        const studentData = JSON.parse(JSON.stringify(db[itemIndex])); // Deep copy
         let hasChanged = false;
 
         studentData.jawaban.forEach((j, index) => {
@@ -318,28 +321,34 @@
         });
 
         if (hasChanged) {
-            db[itemIndex] = studentData;
-            localStorage.setItem('hasilAsesmenSiswa', JSON.stringify(db));
-            alert('Penilaian pemahaman berhasil disimpan!');
+            const payload = { action: 'saveGrade', data: { id: id, jawaban: studentData.jawaban } };
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success'){
+                    alert('Penilaian pemahaman berhasil disimpan!');
+                    closeModal();
+                    fetchDataAndRender(); // Refresh data from sheet
+                } else {
+                    throw new Error(data.message);
+                }
+            })
+            .catch(error => {
+                alert('Gagal menyimpan penilaian: ' + error.message);
+            });
         } else {
             alert('Tidak ada perubahan untuk disimpan.');
         }
-
-        closeModal();
-        updateTampilan();
     }
 
     function exportToPDF(id) {
         const item = db.find(s => s.id === id);
         const element = document.getElementById('modalBody');
-        const opt = {
-          margin:       0.5,
-          filename:     `LAD - ${item.nama} - ${item.kelas}.pdf`,
-          image:        { type: 'jpeg', quality: 0.98 },
-          html2canvas:  { scale: 2 },
-          jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-        };
-        
+        const opt = { margin: 0.5, filename: `LAD - ${item.nama} - ${item.kelas}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
         html2pdf().from(element).set(opt).save();
     }
 
@@ -347,12 +356,10 @@
         modal.style.display = 'none';
     }
     
-    window.onclick = function(event) {
-        if (event.target == modal) closeModal();
-    }
+    window.onclick = function(event) { if (event.target == modal) closeModal(); }
 
-    document.addEventListener('DOMContentLoaded', updateTampilan);
+    document.addEventListener('DOMContentLoaded', fetchDataAndRender);
 </script>
-
 </body>
 </html>
+
