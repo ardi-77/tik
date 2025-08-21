@@ -53,6 +53,10 @@
 </div>
 
 <script>
+    // --- PASTE YOUR DEPLOYED WEB APP URL HERE ---
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqvKoPWcqEBrBGW_5HBvgk3ReyDn3C93qQLMiMfdp54_A0eY8nEjFcRs7iQAQynKQV4Q/exec"; 
+    // ---------------------------------------------
+
     const namaSiswa = sessionStorage.getItem('siswaNama');
     const kelasSiswa = sessionStorage.getItem('siswaKelas');
 
@@ -91,8 +95,6 @@
                     <textarea name="jawaban_alasan_${q.no}" id="jawaban_alasan_${q.no}" rows="3" placeholder="Berikan alasanmu di sini..." required></textarea>
                 `;
             }
-
-            // [REVISED] Menghilangkan pilihan tingkat pemahaman untuk siswa
             const questionHtml = `
                 <div class="question-card">
                     <p class="question">${q.no}. ${q.text}</p>
@@ -105,6 +107,10 @@
 
     function submitQuiz(event) {
         event.preventDefault();
+        const submitButton = event.target.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Mengirim...';
+
         const form = document.getElementById('quizForm');
         const formData = new FormData(form);
         
@@ -122,12 +128,9 @@
                 no: q.no,
                 pertanyaan: q.text,
                 jawaban: jawaban,
-                // [REVISED] Set pemahaman default ke "Belum Dinilai"
                 pemahaman: 'Belum Dinilai'
             };
         });
-
-        const db = JSON.parse(localStorage.getItem('hasilAsesmenSiswa'));
         
         const hasilSiswa = {
             id: Date.now(),
@@ -135,15 +138,34 @@
             kelas: kelasSiswa,
             jawaban: answers
         };
+
+        const payload = {
+            action: "submitQuiz",
+            data: hasilSiswa
+        };
         
-        db.push(hasilSiswa);
-        localStorage.setItem('hasilAsesmenSiswa', JSON.stringify(db));
-        
-        sessionStorage.removeItem('siswaNama');
-        sessionStorage.removeItem('siswaKelas');
-        
-        alert('Terima kasih! Jawaban Anda telah disimpan.');
-        window.location.href = 'index.html';
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' } // Required for Apps Script
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                sessionStorage.removeItem('siswaNama');
+                sessionStorage.removeItem('siswaKelas');
+                alert('Terima kasih! Jawaban Anda telah disimpan.');
+                window.location.href = 'index.html';
+            } else {
+                throw new Error(data.message || 'Gagal mengirim jawaban.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat mengirim jawaban. Silakan coba lagi.');
+            submitButton.disabled = false;
+            submitButton.textContent = 'Kirim Jawaban';
+        });
     }
 
     document.addEventListener('DOMContentLoaded', generateQuestions);
