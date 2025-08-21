@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alat Ungkap Masalah (AUM)</title>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; }
+        .container { max-width: 900px; margin: 20px auto; padding: 30px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #0056b3; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .info-panel { background-color: #eaf2ff; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        td:first-child { width: 5%; text-align: center; }
+        td:last-child { width: 40%; }
+        .radio-group label { margin-right: 8px; font-size: 14px; display: inline-block; }
+        
+        button[type="submit"] {
+            display: block; width: 100%; padding: 15px; background: linear-gradient(to right, #28a745, #218838);
+            color: white; border: none; border-radius: 5px; cursor: pointer;
+            font-size: 18px; font-weight: bold; margin-top: 20px; transition: opacity 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Alat Ungkap Masalah (AUM)</h1>
+    <div class="info-panel">
+        <p><strong>Nama:</strong> <span id="displayNama"></span></p>
+        <p><strong>Kelas:</strong> <span id="displayKelas"></span></p>
+    </div>
+
+    <form id="aumForm" onsubmit="submitAUM(event)">
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Pernyataan</th>
+                    <th>Jawaban</th>
+                </tr>
+            </thead>
+            <tbody id="questionsBody">
+                <!-- Pertanyaan akan di-generate oleh JavaScript -->
+            </tbody>
+        </table>
+        <button type="submit">Kirim Jawaban</button>
+    </form>
+</div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDH_rLs_xmoNR-43-F6V6W7qXUNMpMnAJBFw4l_NwX3ueSvWRRVULLzlDBQH0EBwUU/exec";
+
+    const nama = sessionStorage.getItem('aumNama');
+    const kelas = sessionStorage.getItem('aumKelas');
+
+    if (!nama || !kelas) {
+        alert('Anda harus login terlebih dahulu.');
+        window.location.href = 'index.html';
+    } else {
+        document.getElementById('displayNama').textContent = nama;
+        document.getElementById('displayKelas').textContent = kelas;
+    }
+
+    const questions = [
+        "Tugas-tugas pelajaran yang diberikan guru tidak dapat saya kerjakan dengan baik karena materi pelajaran yang menunjang penyelesaian tugas tersebut tidak saya kuasai",
+        "Saya mengulangi kembali materi yang diberikan oleh guru pada pelajaran sebelumnya sebagai persiapan untuk mengikuti pelajaran berikutnya",
+        "Apabila saya terpaksa tidak dapat mengikuti pelajaran, maka saya mengejar ketinggalan saya itu agar materi pelajaran berikutnya dapat saya ikuti dengan baik.",
+        "Saya tidak dapat mengaitkan atau melihat urutan yang teratur dan saling menunjang antara materi pelajaran terdahulu dengan materi pelajaran berikutnya.",
+        "Saya berusaha menguasai materi pelajaran terdahulu sebagai persiapan untuk mengikuti pelajaran berikutnya.",
+        "Sewaktu proses belajar-mengajar di kelas berlangsung saya kurang dapat memanfaatkan kesempatan dan/atau mengalami kesulitan menyusun kata-kata untuk bertanya kepada guru tentang hal-hal yang kurang saya kuasai.",
+        "Saya sulit menghindarkan diri dari berbuat curang dan/atau melayani pertanyaan teman sewaktu ulangan/ujian berlangsung.",
+        "Jika proses belajar-mengajar yang telah dijadwalkan tidak jadi berlangsung, maka saya merasa senang dan menggunakan waktu itu untuk hal-hal yang saya sukai di luar kegiatan belajar.",
+        "Catatan pelajaran saya tidak lengkap dan banyak kekurangannya.",
+        "Saya mengalami kesulitan dalam mempersiapkan kondisi fisik dan psikis sehingga waktu mengikuti pelajaran dan/atau ulangan/ujian saya berada dalam kondisi yang kurang bersemangat.",
+        "Untuk setiap tugas yang saya kerjakan dan diserahkan kepada guru, saya membuat pertinggalnya (arsip) sebagai bahan belajar selanjutnya.",
+        "Untuk ulangan/ujian dan/atau tugas yang nilainya rendah, saya mencari kesempatan kepada guru untuk memperbaikinya.",
+        "Semua tugas yang telah saya kerjakan, termasuk yang telah dikembalikan oleh guru saya susun secara teratur sebagai bahan belajar selanjutnya.",
+        "Saya mengalami kesulitan dalam menyarikan (membuat ringkasan) bahan bacaan (misalnya dari buku pelajaran) untuk melengkapi catatan pelajaran.",
+        "Jika diberi kebebasan tempat duduk di dalam kelas, maka saya akan memilih tempat duduk yang paling menguntungkan untuk mengikuti pelajaran dengan sebaik-baiknya.",
+        "Saya berusaha melengkapi buku-buku pelajaran sehingga saya mempunyai semacam perpustakaan kecil di rumah.",
+        "Penyelesaian tugas-tugas saya didukung oleh sarana dan biaya yang cukup untuk itu.",
+        "Kegiatan belajar dan kegiatan sekolah lainnya terganggu karena saya harus membantu orang tua bekerja.",
+        "Karena saya harus mempersiapkan biaya hidup dan lain-lainnya, saya kehilangan banyak waktu untuk mengikuti pelajaran dan kegiatan sekolah lainnya.",
+        "Ruang dan sarana belajar yang tersedia di rumah saya cukup memenuhi persyaratan.",
+        "Saya tampil dalam kegiatan belajar di kelas dan/atau di luar kelas dengan rasa percaya diri yang tinggi.",
+        "Saya akan lebih giat belajar jika diberi kebebasan memilih mata pelajaran dan/atau kegiatan ko/ekstra kurikuler yang saya senangi.",
+        "Khayalan-khayalan dan lamunan-lamunan tentang sesuatu, mengganggu konsentrasi saya dalam belajar.",
+        "Saya senang membantu teman untuk menjelaskan dan mendalami materi pelajaran.",
+        "Kelancaran saya dalam belajar, baik di sekolah ataupun di rumah banyak dibantu oleh kemampuan saya berhubungan/bergaul dengan orang lain.",
+        "Saya mengalami kesulitan dalam mengajukan pertanyaan kepada guru karena kurang baiknya hubungan saya dengan guru tersebut.",
+        "Saya merasa guru-guru cukup mengerti minat dan keinginan siswa.",
+        "Menurut pengalaman saya disiplin dan peraturan yang diberlakukan kepada siswa terlalu ketat.",
+        "Ketidaksukaan saya kepada guru tertentu menyebabkan saya melalaikan tugas-tugas pelajaran.",
+        "Guru-guru saya lebih menyenangi siswa yang suka menghafal daripada mereka yang suka berpikir dan mendalami materi pelajaran.",
+        "Saya mengalami kesulitan dalam belajar karena materi pelajaran tidak berurutan, sehingga materi pelajaran terdahulu tidak menunjang untuk mempelajari materi pelajaran berikutnya.",
+        "Ketidaklengkapan jilid-jilid dari buku pelajaran menyebabkan saya tidak dapat memahami materi pelajaran secara lengkap dan menyeluruh.",
+        "Untuk suksesnya penyelesaian tugas-tugas pelajaran, terlebih dulu saya siapkan berbagai bahan yang diperlukan, seperti buku catatan, bahan bacaan, alat-alat tulis, dan sebagainya.",
+        "Saya mengalami kesulitan dalam menyelesaikan tugas pelajaran karena tidak meneliti perintah/petunjuk mengerjakan tugas tersebut.",
+        "Saya mempelajari kembali materi pelajaran terdahulu untuk menunjang penguasaan materi pelajaran berikutnya.",
+        "Untuk memahami materi pelajaran, saya membuat pertanyaan tentang materi pelajaran tersebut dan mencoba menjawabnya.",
+        "Apabila saya terpaksa tidak masuk sekolah dan pada waktu itu ada tugas, maka saya segera menyelesaikan tugas tersebut sebelum mengikuti materi pelajaran berikutnya.",
+        "Saya kehabisan waktu untuk mengoreksi kembali semua jawaban ulangan/ujian sebelum diserahkan kepada guru/pengawas.",
+        "Untuk lebih berhasilnya belajar dan memanfaatkan waktu dengan sebaik-baiknya, terlebih dahulu saya menentukan dan menyusun bahan yang akan saya pelajari secara berurutan.",
+        "Setelah selesai ulangan/ujian, saya khawatir dan bertanya-tanya tentang hasil yang akan saya peroleh dari ulangan/ujian tersebut.",
+        "Saya menghafal hukum-hukum, definisi-definisi, rumus-rumus dan sebagainya tanpa memahami benar apa yang dimaksudnya.",
+        "Di samping belajar sendiri untuk mendalami materi pelajaran ataupun mempersiapkan ulangan/ujian saya senang belajar bersama.",
+        "Saya mengalami kesulitan memahami bahan bacaan (misalnya dari buku pelajaran) yang memuat istilah-istilah baru, terutama istilah-istilah asing.",
+        "Dalam belajar di kelas, saya berusaha menahan diri untuk tidak terganggu atau mengganggu teman.",
+        "Dalam mempelajari bahan bacaan, saya melampaui bagian-bagian tertentu, seperti grafik, diagram dan tabel, yang ternyata hal itu adalah penting.",
+        "Buku-buku pelajaran yang saya butuhkan cukup tersedia di sekolah.",
+        "Kegiatan belajar yang saya ikuti sangat menarik karena dilengkapi dengan alat penunjang pelajaran, seperti alat peraga dan/atau alat untuk melakukan percobaan.",
+        "Kegiatan belajar saya terganggu karena setiap kali harus memikirkan biaya untuk membayar SPP dan/atau biaya lainnya.",
+        "Saya mengalami kesulitan bila tugas-tugas pelajaran diharuskan dibuat di kertas (buku) tersendiri, misalnya lembaran kerja siswa (LKS) karena saya tidak memiliki biaya untuk itu.",
+        "Saya kurang mampu tampil dengan kepercayaan diri yang tinggi di hadapan guru dan/atau teman-teman karena kekurangan sarana/biaya hidup sehari-hari.",
+        "Perasaan nyaman dan tenang sewaktu menghadapi ulangan/ujian membantu saya memperoleh hasil ulangan/ujian yang memuaskan.",
+        "Saya berpendapat bahwa hasil belajar yang saya peroleh lebih banyak tergantung pada usaha yang Saya lakukan daripada faktor untung-untungan.",
+        "Saya rasa belajar di Sekolah Menengah (Umum atau Kejuruan) hanya membuang-buang waktu dan tenaga.",
+        "Saya merasa bahwa nilai-nilai yang saya peroleh memang mencerminkan kemampuan saya.",
+        "Saya kurang semangat dalam mengikuti pelajaran sehingga sewaktu belajar saya membuat gambar, corat-coretan pada buku catatan atau meja belajar, atau melakukan kegiatan-kegiatan yang tidak menentu lainnya.",
+        "Ruang belajar saya di rumah bersih, rapi dan hanya berisi hal-hal yang perlu saja serta mendorong semangat belajar.",
+        "Pergaulan yang baik dengan teman-teman dan/atau guru-guru meningkatkan semangat belajar saya.",
+        "Suara musik yang bergema di lingkungan rumah dan/atau tetangga serta kebisingan lainnya mengakibatkan saya sukar berkonsentrasi dalam belajar.",
+        "Guru-guru lebih senang memperlihatkan kepada siswa bahwa mereka lebih berkuasa dan mempunyai hak istimewa.",
+        "Saya sukar belajar di rumah karena penghuni terlalu banyak dan/atau banyak tamu.",
+        "Dalam belajar untuk mempersiapkan ulangan/ujian, saya menyusun materi pelajaran sedemikian rupa sehingga materi yang terdahulu membantu saya menguasai materi berikutnya.",
+        "Penguasaan saya terhadap materi-materi pelajaran di kelas/sekolah sebelumnya kurang membantu saya menguasai materi pelajaran di kelas/sekolah yang saya ikuti sekarang.",
+        "Saya mengalami kesulitan memahami isi buku pelajaran karena isi buku tersebut tidak berurutan, materi yang terdahulu tidak mendasari pemahaman materi berikutnya.",
+        "Saya terhalang untuk mengikuti pelajaran dan/atau kegiatan sekolah tertentu karena saya tidak memiliki pengetahuan dan keterampilan dasar untuk menguasai materi pelajaran/kegiatan tersebut.",
+        "Ketidakmampuan saya dalam menjawab soal-soal ulangan/ujian disebabkan karena kurangnya pengetahuan dasar yang menunjang terhadap jawaban soal-soal ulangan/ujian tersebut.",
+        "Untuk seluruh materi pelajaran, saya hanya mengandalkan catatan pelajaran yang saya buat sewaktu proses belajar-mengajar di dalam kelas berlangsung.",
+        "Dalam mempersiapkan diri untuk ulangan/ujian, saya berusaha menjawab soal-soal yang pernah ditanyakan/diujikan dalam mata pelajaran tersebut; saya berusaha mendiskusikan pertanyaan/soal-soal itu dengan teman-teman.",
+        "Saya mengalami kesulitan dalam menentukan ide pokok/inti sari bahan bacaan (misalnya dari buku pelajaran) yang harus saya pelajari.",
+        "Kesalahan saya dalam menjawab soal-soal ulangan/ujian, ternyata disebabkan oleh kecerobohan saya dalam menjawab soal-soal tersebut.",
+        "Apabila saya terpaksa tidak mengikuti pelajaran, maka saya meminjam catatan teman dan mendiskusikan materi pelajaran yang tertinggal tersebut.",
+        "Sebelum berangkat ke sekolah, saya menyiapkan segala sesuatu yang diperlukan, seperti buku catatan, buku-buku pelajaran, alat-alat tulis dan sebagainya.",
+        "Apabila saya terpaksa tidak mengikuti pelajaran, saya memberi kabar kepada guru yang bersangkutan dan/atau guru piket; apabila untuk pelajaran tersebut ada tugas saya tetap menyerahkan tugas yang diwajibkan untuk mata pelajaran itu.",
+        "Saya membuat jadwal sendiri yang memuat kegiatan belajar, tugas-tugas, ulangan harian, ulangan/ujian umum, dan mengikuti jadwal tersebut dengan sepenuhnya.",
+        "Intisari bahan bacaan (misalnya dari buku pelajaran) saya tuliskan pada kartu-kartu yang saya sediakan khusus untuk itu dengan mengikuti prosedur pengutipan yang semestinya; kartu-kartu ini kemudian saya susun secara teratur sebagai bahan belajar selanjutnya.",
+        "Saya mempersiapkan diri untuk menghadapi ulangan/ujian dalam bentuk apapun juga, seperti bentuk objektif, uraian (essay), ataupun lisan.",
+        "Apabila saya tidak memiliki buku pelajaran tertentu yang diperlukan, saya berusaha membeli atau meminjamnya dari perpustakaan atau teman.",
+        "Pemikiran saya untuk memperoleh beasiswa atau tunjangan belajar lainnya mengganggu saya berkonsentrasi dalam belajar.",
+        "Kenyamanan dan kesenangan saya belajar di sekolah didukung oleh kondisi atau kelas yang memadai.",
+        "Ketidakmampuan saya untuk memenuhi tuntutan seperti pakaian seragam, iuran dan sebagainya, membuat saya menemui kesulitan dan/atau kurang bersemangat dalam mengikuti pelajaran.",
+        "Kehidupan sehari-hari saya yang cukup didukung oleh sarana yang memadai menunjang kelancaran kegiatan belajar.",
+        "Menurut pendapat saya guru berusaha memberi nilai siswa secara objektif.",
+        "Ketidaksenangan saya terhadap guru dan/atau mata pelajaran tertentu tidak menjadikan saya mengabaikan mata pelajaran tersebut.",
+        "Saya mempunyai minat yang tinggi dalam belajar untuk semua mata pelajaran.",
+        "Saya merasa bahwa guru-guru mengharapkan siswa belajar berlebihan di luar jam pelajaran dan/atau memberikan tugas-tugas untuk sekedar menyusahkan siswa.",
+        "Perasaan gelisah, murung atau pikiran kacau membuat saya tidak dapat belajar dengan baik.",
+        "Di rumah saya harus membantu adik-adik belajar dan/atau mengasuh mereka, dan/atau membantu pekerjaan sehari-hari, sehingga pelajaran saya terbengkalai.",
+        "Menurut pendapat saya guru-guru berusaha memberikan perhatian dan membantu para siswa secara lembut, bijaksana dan adil.",
+        "Meskipun teman-teman bersikap santai dan kurang serius dalam belajar, saya tidak terpengaruh dan tetap mengupayakan kegiatan belajar secara penuh.",
+        "Orang tua dan/atau saudara-saudara saya memperhatikan dan memberikan dorongan terhadap kegiatan belajar saya baik di sekolah maupun di rumah.",
+        "Saya tidak mau bertanya dan/atau memberikan tanggapan sewaktu pelajaran dalam kelas berlangsung karena takut ditertawakan oleh teman-teman.",
+        "Kurikulum, urutan materi pelajaran dan buku-buku pelajaran kurang membantu saya dalam menguasai materi pelajaran dan/atau keterampilan dari yang lebih rendah ke yang lebih tinggi.",
+        "Saya memberikan perhatian khusus terhadap materi pelajaran yang menjadi dasar bagi penguasaan materi pelajaran yang lebih tinggi.",
+        "Saya percaya cara yang terbaik untuk memperoleh nilai yang tinggi adalah dengan mengikuti secara teratur dan menguasai materi pelajaran dari minggu ke minggu (setiap kali proses belajar mengajar berlangsung).",
+        "Saya mengalami kesulitan memahami bahan pelajaran baru karena bahan-bahan terdahulu tidak/atau kurang saya kuasai.",
+        "Kesulitan saya memahami materi pelajaran disebabkan karena saya tidak memahami konsep-konsep dasar, ungkapan-ungkapan dan/atau istilah-istilah yang harus dikuasai terlebih dahulu.",
+        "Salah satu sebab keterlambatan saya dalam belajar dan/atau mengerjakan tugas-tugas pelajaran adalah karena saya lambat dalam membaca.",
+        "Rendahnya hasil ulangan/ujian yang saya peroleh disebabkan karena saya kurang menguasai materi pelajaran yang diajarkan dan/atau ditugaskan oleh guru.",
+        "Untuk memperdalam pemahaman saya tentang bahan bacaan (misalnya dari buku pelajaran) yang saya pelajari, saya menyusun pertanyaan-pertanyaan untuk saya jawab sendiri dan/atau saya diskusikan dengan teman-teman.",
+        "Saya tidak memperbaiki atau mempelajari kembali tugas yang nilainya rendah, karena hal itu tidak ada gunanya.",
+        "Setiap selesai pelajaran di sekolah saya segera menyusun kembali dan melengkapi catatan pelajaran tersebut.",
+        "Saya memperlakukan semua mata pelajaran sama pentingnya, baik kegiatan belajarnya di sekolah, tugas-tugasnya, maupun ulangan-ulangan/ujian-ujiannya.",
+        "Sewaktu mengikuti pelajaran di dalam kelas saya mudah terpengaruh oleh keadaan lingkungan, seperti teman yang mengajak berbicara, suara-suara atau orang lain yang lewat di luar ruangan, dan sebagainya.",
+        "Sewaktu proses belajar mengajar berlangsung saya mengalami kesulitan dalam menjawab pertanyaan dan/atau menanggapi hal-hal yang dilontarkan guru.",
+        "Saya mendiskusikan catatan dan materi pelajaran dengan teman sekelas.",
+        "Saya berusaha mengerjakan semua soal ulangan/ujian dalam alokasi waktu yang disediakan.",
+        "Dalam mengerjakan tugas yang berupa makalah atau laporan tertulis saya mengalami kesulitan berkenaan dengan tata cara penulisan (ejaan, tata bahasa, dan tanda baca), pengutipan, format dan sistematika penulisan.",
+        "Saya mengatur kegiatan sehari-hari, yang meliputi kegiatan belajar, ekstra kurikuler, latihan-latihan khusus, dan kegiatan-kegiatan lainnya sehingga jadwal satu hari penuh dapat saya isi dengan baik.",
+        "Untuk setiap soal ulangan/ujian, saya berusaha menampilkan jawaban dengan jelas, tepat dan lengkap.",
+        "Saya mengalami kesulitan membagi waktu dan/atau memanfaatkan waktu luang untuk mendalami materi pelajaran.",
+        "Apabila saya menemukan hal-hal yang kurang saya mengerti dari bahan bacaan (misalnya dari buku pelajaran) dan tugas-tugas, maka hal itu saya catat dan saya tanyakan kepada teman dan/atau guru mata pelajaran yang bersangkutan.",
+        "Bagi saya membelanjakan uang dan menggunakan waktu untuk sesuatu yang menyenangkan/menggembirakan lebih penting daripada untuk keperluan pelajaran dan belajar.",
+        "Ketika hendak belajar saya merasa sangat lelah, jemu dan/atau mengantuk sehingga tidak dapat belajar dengan baik.",
+        "Saya membuang-buang waktu untuk mengobrol, menonton televisi, mendengarkan radio, menonton di bioskop dan sebagainya, yang sebenarnya waktu itu amat berguna untuk kegiatan belajar saya.",
+        "Saya percaya bahwa mata pelajaran-mata pelajaran yang saya ikuti berguna untuk melanjutkan pendidikan, dan/atau untuk pekerjaan saya kelak, dan/atau untuk kehidupan sehari-hari.",
+        "Dorongan utama saya untuk memasuki sekolah menengah (Umum atau Kejuruan) adalah untuk memperoleh ijazah, dan/atau menyenangkan orang tua, dan/atau memperoleh kehormatan di mata umum.",
+        "Saya merasa guru-guru berbicara terlalu banyak dan membosankan, baik di dalam maupun di luar kelas.",
+        "Teman sekamar atau satu pondokan dan/atau saudara-saudara saya cukup peduli tentang kebersihan dan kerapian ruang belajar, yang semuanya itu menunjang kegiatan belajar saya.",
+        "Saya berpendapat guru-guru mempunyai pandangan yang luas dan mereka membuat keputusan dengan adil dan/atau mempertimbangkan keadaan dan kepentingan para siswa.",
+        "Kegiatan organisasi kesiswaan dan/atau organisasi lainnya baik di sekolah maupun di luar sekolah mengganggu kegiatan belajar saya.",
+        "Lingkungan sekolah yang kurang nyaman dan/atau kurang terawat mengakibatkan proses belajar saya terganggu.",
+        "Saya mengalami kesulitan dalam menemukan bahan bacaan tambahan yang berkaitan dengan materi pelajaran.",
+        "Bila saya harus mengerjakan tugas-tugas pelajaran yang berat dan/atau tidak menarik, maka tugas itu saya selesaikan seadanya untuk sekedar memenuhi tuntutan saja.",
+        "Untuk soal-soal ulangan/ujian yang dikembalikan saya berusaha memperbaiki jawaban yang salah dengan melihat kembali bahan (catatan/buku-buku) pelajaran yang ada dan/atau mendiskusikannya dengan teman.",
+        "Saya kurang berminat dan cepat bosan dalam membaca buku pelajaran.",
+        "Saya berusaha hadir kurang lebih 15 menit sebelum jam pelajaran di sekolah mulai.",
+        "Dalam mengerjakan ulangan/ujian, saya menyediakan waktu untuk masing-masing soal sehingga keseluruhan waktu yang ditentukan dapat dimanfaatkan dengan baik.",
+        "Dalam belajar di rumah, saya mempelajari catatan dan bahan-bahan terdahulu serta membuat pertanyaan tentang bahan yang belum saya pahami untuk disampaikan kepada guru pada pelajaran esok harinya.",
+        "Untuk mengikuti ulangan/ujian, saya berusaha berada di ruangan ulangan/ujian lebih awal dan mempersiapkan semua perlengkapan yang diperlukan, seperti alat-alat tulis, penghapus, penggaris dan sebagainya.",
+        "Saya kurang mampu memberikan sumbangan berupa ide atau pendapat kepada teman, dan/atau kurang mampu mengambil manfaat dari semua yang dibicarakan/dibahas dalam kegiatan belajar kelompok.",
+        "Dalam mengerjakan tugas pelajaran saya lebih mengutamakan mutu hasilnya daripada sekedar cepat selesai.",
+        "Saya memperbaiki tugas yang dikembalikan guru sesuai dengan catatan dan komentar yang diberikan walaupun tidak akan dikumpulkan dan dinilai kembali.",
+        "Pada waktu belajar saya mengalami kesulitan untuk menghindarkan diri dari gangguan-gangguan yang mungkin timbul seperti menonton televisi, mendengarkan radio, ajakan teman, dan sebagainya.",
+        "Saya berusaha menyelesaikan urusan-urusan lain sebelum belajar di dalam kelas atau ulangan/ujian, sehingga saya dapat sepenuhnya mengikuti pelajaran dan/atau ulangan/ujian tersebut dengan tenang dan baik.",
+        "Dalam belajar dan/atau mengerjakan tugas pelajaran, saya lambat memulainya dan tidak tahan lama melaksanakannya.",
+        "Dalam mengikuti ulangan/ujian, saya berusaha membebaskan diri dari berbagai gangguan yang mungkin timbul, misalnya menoleh kiri-kanan, melayani pertanyaan teman, dan sebagainya.",
+        "Bagi saya kemenangan/keberhasilan dalam pertandingan olah raga, kesenian dan/atau kegiatan ekstra kurikuler lainnya sama pentingnya dengan sukses dalam mata pelajaran.",
+        "Saya merasa bahwa usaha untuk memuji dan menyenangkan hati guru merupakan salah satu cara untuk mendapatkan nilai yang lebih baik.",
+        "Minat, kemampuan dan/atau gambaran saya tentang masa depan membuat saya berpikir-pikir untuk berhenti sekolah dan mencari pekerjaan.",
+        "Saya meragukan dan mempertanyakan bakat dan kemampuan saya untuk dapat menyelesaikan pendidikan saya.",
+        "Saya lebih senang tidak masuk sekolah bila ada hal lain yang ingin saya lakukan.",
+        "Saya berpendapat guru-guru dengan senang hati bersedia membahas permasalahan siswa secara pribadi.",
+        "Saya merasa guru-guru cenderung meremehkan para siswa dan/atau memperolok-olokkan kesalahan mereka.",
+        "Teman akrab/pacar saya mendorong saya untuk belajar.",
+        "Hubungan guru siswa di luar kegiatan belajar mendorong semangat saya untuk lebih giat belajar.",
+        "Letak rumah yang jauh dari sekolah dan/atau kesulitan transportasi melemahkan semangat saya untuk belajar.",
+        "Kesulitan dalam memahami petunjuk ulangan/ujian menyebabkan nilai ulangan/ujian saya rendah.",
+        "Catatan pelajaran saya banyak yang tidak dapat saya pahami.",
+        "Rendahnya nilai tugas yang saya kerjakan disebabkan oleh kurang mampunya saya mengemukakan ide dan/atau pendapat secara tertulis.",
+        "Saya tidak mengharapkan tugas-tugas pelajaran dikembalikan oleh guru, sebab apabila nilai saya rendah akan mengganggu konsentrasi belajar.",
+        "Buku-buku pelajaran yang tersedia baik di rumah maupun di sekolah tidak dapat saya manfaatkan sebagai sumber bahan belajar yang cocok (relevan) dengan materi pelajaran yang disampaikan guru.",
+        "Dalam mempersiapkan diri untuk menghadapi ulangan/ujian, saya mengumpulkan dan menyusun bahan pelajaran selengkapnya yang meliputi buku catatan, buku-buku pelajaran, tugas-tugas, dan bahan bacaan lainnya.",
+        "Untuk suksesnya kegiatan belajar saya berusaha membentuk kelompok belajar dan menyelenggarakan kegiatannya secara teratur.",
+        "Kegiatan belajar saya terbantu dengan tersedianya bahan-bahan/buku-buku pelajaran di sekolah.",
+        "Saya mengalami kesulitan dalam memahami materi pelajaran, terutama yang berbentuk grafik, gambar, dan tabel.",
+        "Melalui kegiatan belajar dan kegiatan sekolah lainnya saya berusaha sekuat tenaga untuk memperoleh nilai setinggi-tingginya.",
+        "Untuk memantapkan tugas yang harus diselesaikan, saya mencari contoh tugas yang telah dianggap baik oleh guru yang bersangkutan.",
+        "Saya mengalami kesulitan untuk mengingat materi pelajaran dan tidak dapat menggunakan titian ingatan tertentu.",
+        "Saya memanfaatkan kelompok belajar untuk mendalami materi pelajaran, mengerjakan tugas-tugas dan mempersiapkan ulangan/ujian.",
+        "Dalam saya membuat catatan pelajaran, banyak hal yang ternyata kemudian tidak penting.",
+        "Dalam mempelajari bahan pelajaran untuk menghadapi ulangan/ujian, saya membuat pertanyaan-pertanyaan yang kemungkinan akan keluar dalam ulangan/ujian; pertanyaan-pertanyaan itu saya usahakan menjawabnya sendiri dan/atau mendiskusikannya dengan teman.",
+        "Saya mengalami hambatan tertentu dalam belajar bersama karena suasana kelompok yang kurang menyenangkan.",
+        "Saya merasa beruntung karena kegiatan belajar saya ditunjang oleh kondisi tubuh dan kesehatan yang memuaskan.",
+        "Jika saya terpaksa tidak hadir dalam kegiatan belajar di sekolah saya merasa sangat kecewa karena tertinggal dengan teman-teman dan kehilangan sesuatu yang amat penting.",
+        "Tanpa sebab yang saya ketahui, sewaktu belajar saya menjadi kurang semangat, lelah atau dirundung perasaan tidak menentu.",
+        "Apabila hasil ujian saya ternyata rendah, pikiran dan perasaan saya menjadi kacau tidak menentu dalam waktu yang cukup lama."
+    ];
+
+    function generateQuestions() {
+        const tableBody = document.getElementById('questionsBody');
+        const options = ['J', 'K', 'Sr', 'U', 'Sl'];
+        const optionLabels = ['Jarang', 'Kadang-kadang', 'Sering', 'Umumnya', 'Selalu'];
+        
+        questions.forEach((q, index) => {
+            const no = index + 1;
+            let optionsHtml = '';
+            options.forEach((opt, i) => {
+                optionsHtml += `
+                    <label title="${optionLabels[i]}">
+                        <input type="radio" name="q_${no}" value="${opt}" required> ${opt}
+                    </label>
+                `;
+            });
+
+            const row = `
+                <tr>
+                    <td>${no}</td>
+                    <td>${q}</td>
+                    <td><div class="radio-group">${optionsHtml}</div></td>
+                </tr>
+            `;
+            tableBody.innerHTML += row;
+        });
+    }
+
+   function submitAUM(event) {
+        event.preventDefault();
+        const submitButton = event.target.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Mengirim...';
+
+        const formData = new FormData(document.getElementById('aumForm'));
+        const answers = [];
+        for (let [key, value] of formData.entries()) {
+            answers.push({ no: key.split('_')[1], answer: value });
+        }
+
+        const result = {
+            id: Date.now(),
+            nama: nama,
+            kelas: kelas,
+            answers: answers
+        };
+
+        const payload = {
+            action: 'submitAUM',
+            data: result
+        };
+
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                sessionStorage.clear();
+                alert('Terima kasih! Jawaban Anda telah disimpan.');
+                window.location.href = 'index.html';
+            } else {
+                throw new Error(data.message || 'Gagal mengirim jawaban.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat mengirim jawaban. Silakan coba lagi.');
+            submitButton.disabled = false;
+            submitButton.textContent = 'Kirim Jawaban';
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', generateQuestions);
+</script>
+
+</body>
+</html>
