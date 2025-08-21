@@ -1,1 +1,164 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Alat Ungkap Masalah (AUM)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #eef5f3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .login-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 900px;
+            height: 550px;
+            background-color: #fff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .login-form, .welcome-panel {
+            width: 50%;
+            padding: 50px;
+            box-sizing: border-box;
+        }
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .login-form h2 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .tabs { display: flex; margin-bottom: 25px; }
+        .tab-button {
+            flex-basis: auto; padding: 10px 15px; margin-right: 20px; border: none;
+            background: none; cursor: pointer; font-size: 16px; color: #aaa;
+            font-weight: 500; border-bottom: 3px solid transparent; transition: all 0.3s;
+        }
+        .tab-button.active { color: #20c997; border-bottom-color: #20c997; }
+        .form-content { display: none; }
+        .form-content.active { display: block; }
+        
+        input, select {
+            width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd;
+            border-radius: 5px; font-size: 15px; box-sizing: border-box; background-color: #f7f7f7;
+        }
+        button[type="submit"] {
+            width: 100%; padding: 12px; background: linear-gradient(to right, #20c997, #17a2b8);
+            color: white; border: none; border-radius: 5px; cursor: pointer;
+            font-size: 16px; font-weight: 600; transition: opacity 0.3s; margin-top: 10px;
+        }
+        .error { color: #dc3545; font-size: 14px; margin-top: 10px; }
+
+        .welcome-panel {
+            background: linear-gradient(to bottom right, #20c997, #17a2b8);
+            color: white; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; text-align: center;
+        }
+        .welcome-panel h2 { font-size: 32px; font-weight: 600; margin-bottom: 15px; }
+        .welcome-panel p { font-size: 16px; max-width: 300px; line-height: 1.6; }
+
+        @media (max-width: 920px) {
+            .login-wrapper { flex-direction: column; height: auto; max-width: 500px; }
+            .login-form, .welcome-panel { width: 100%; }
+            .welcome-panel { padding: 40px 30px; border-radius: 0 0 10px 10px; }
+            .login-form { padding: 40px 30px; }
+        }
+        @media (max-width: 576px) {
+            body { align-items: flex-start; padding: 0; }
+            .login-wrapper { width: 100%; height: 100%; min-height: 100vh; border-radius: 0; box-shadow: none; }
+            .login-form { padding: 40px 25px; justify-content: flex-start; padding-top: 60px; }
+            .welcome-panel { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+    <div class="login-form">
+        <h2>Login</h2>
+        <div class="tabs">
+            <button class="tab-button active" onclick="showForm('siswa')">Siswa</button>
+            <button class="tab-button" onclick="showForm('guru')">Guru</button>
+        </div>
+
+        <!-- Form Siswa -->
+        <div id="siswa-form" class="form-content active">
+            <form id="formLoginSiswa" onsubmit="loginSiswa(event)">
+                <select id="kelas" required>
+                    <option value="" disabled selected>Pilih Kelas</option>
+                    <option value="X TKPI">X TKPI</option>
+                    <option value="X NKPI A">X NKPI A</option>
+                    <option value="X NKPI B">X NKPI B</option>
+                    <option value="X TSM A">X TSM A</option>
+                    <option value="X TSM B">X TSM B</option>
+                    <option value="X APAT A">X APAT A</option>
+                    <option value="X APAT B">X APAT B</option>
+                    <option value="X APHPI A">X APHPI A</option>
+                    <option value="X APHPI B">X APHPI B</option>
+                </select>
+                <input type="text" id="nama" placeholder="Nama Lengkap" required>
+                <button type="submit">Mulai Mengerjakan</button>
+            </form>
+        </div>
+
+        <!-- Form Guru -->
+        <div id="guru-form" class="form-content">
+            <form id="formLoginGuru" onsubmit="loginGuru(event)">
+                <input type="password" id="password" placeholder="Password Guru" required>
+                <button type="submit">Login Guru</button>
+                <p id="guruError" class="error"></p>
+            </form>
+        </div>
+    </div>
+    <div class="welcome-panel">
+        <h2>Welcome!</h2>
+        <p>Silakan login sesuai dengan peran Anda untuk mengakses Alat Ungkap Masalah (AUM).</p>
+    </div>
+</div>
+
+<script>
+    function showForm(formName) {
+        document.querySelectorAll('.form-content').forEach(form => form.classList.remove('active'));
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(formName + '-form').classList.add('active');
+        document.querySelector(`.tab-button[onclick="showForm('${formName}')"]`).classList.add('active');
+    }
+
+    function loginSiswa(event) {
+        event.preventDefault();
+        sessionStorage.setItem('aumKelas', document.getElementById('kelas').value);
+        sessionStorage.setItem('aumNama', document.getElementById('nama').value);
+        window.location.href = 'aum.html';
+    }
+
+    function loginGuru(event) {
+        event.preventDefault();
+        const password = document.getElementById('password').value;
+        const errorElement = document.getElementById('guruError');
+        if (password === 'Jianjar@000') { // Ganti dengan password Anda
+            sessionStorage.setItem('guruLoggedInAUM', 'true');
+            window.location.href = 'hasil.html';
+        } else {
+            errorElement.textContent = 'Password salah!';
+        }
+    }
+</script>
+
+</body>
+</html>
 
