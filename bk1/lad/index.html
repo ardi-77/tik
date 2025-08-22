@@ -3,101 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Asesmen Diagnostik</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .container { background-color: #ffffff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
-        h2 { color: #333; margin-bottom: 20px; }
-        .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; }
-        .tab-button { flex: 1; padding: 15px; border: none; background-color: transparent; cursor: pointer; font-size: 16px; color: #aaa; transition: all 0.3s; }
-        .tab-button.active { color: #007BFF; border-bottom: 2px solid #007BFF; }
-        .form-content { display: none; }
-        .form-content.active { display: block; }
-        input[type="text"], input[type="password"], select { width: calc(100% - 20px); padding: 12px 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
-        button { width: 100%; padding: 12px; background-color: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
-        button:hover { background-color: #0056b3; }
-        .error { color: #d9534f; margin-top: 10px; font-size: 14px; }
-    </style>
+    <title>Lembar Asesmen Diagnostik</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf-autotable@latest/dist/jspdf.plugin.autotable.js"></script>
 </head>
 <body>
 
-<div class="container">
-    <h2>Login Asesmen Diagnostik</h2>
-    <div class="tabs">
-        <button class="tab-button active" onclick="showForm('siswa')">Siswa</button>
-        <button class="tab-button" onclick="showForm('guru')">Guru</button>
+    <div id="login-view" class="view-container">
+        <div class="login-box">
+            <div class="login-form-container">
+                <h1>Login</h1>
+                <div class="tabs">
+                    <div class="tab active" data-tab="siswa">Siswa</div>
+                    <div class="tab" data-tab="guru">Guru</div>
+                </div>
+
+                <form id="siswa-login-form" class="login-form">
+                    <select id="kelas" required>
+                        <option value="">Pilih Kelas</option>
+                        <option value="X TKPI">X TKPI</option>
+                        <option value="X NKPI A">X NKPI A</option>
+                        <option value="X NKPI B">X NKPI B</option>
+                        <option value="X TSM A">X TSM A</option>
+                        <option value="X TSM B">X TSM B</option>
+                        <option value="X APAT A">X APAT A</option>
+                        <option value="X APAT B">X APAT B</option>
+                    </select>
+                    <input type="text" id="namaLengkap" placeholder="Nama Lengkap" required>
+                    <button type="submit">Mulai Mengerjakan</button>
+                </form>
+
+                <form id="guru-login-form" class="login-form hidden">
+                    <input type="password" id="guruPassword" placeholder="Password Guru" required>
+                    <button type="submit">Login Guru</button>
+                </form>
+            </div>
+            <div class="login-welcome-panel">
+                <h2>Welcome!</h2>
+                <p>Silakan login sesuai dengan peran Anda untuk mengakses Lembar Asesmen Diagnostik.</p>
+            </div>
+        </div>
     </div>
 
-    <div id="siswa-form" class="form-content active">
-        <form id="formLoginSiswa" onsubmit="loginSiswa(event)">
-            <select id="kelas" name="kelas" required>
-                <option value="" disabled selected>Pilih Kelas</option>
-                <option value="X TKPI">X TKPI</option>
-                <option value="X NKPI A">X NKPI A</option>
-                <option value="X NKPI B">X NKPI B</option>
-                <option value="X TSM A">X TSM A</option>
-                <option value="X TSM B">X TSM B</option>
-                <option value="X APAT A">X APAT A</option>
-                <option value="X APAT B">X APAT B</option>
-            </select>
-            <input type="text" id="nama" name="nama" placeholder="Nama Lengkap" required>
-            <button type="submit">Mulai Mengerjakan</button>
-        </form>
+    <div id="quiz-view" class="view-container hidden">
+        <div class="quiz-box">
+            <h1 id="quiz-header">Lembar Asesmen Diagnostik</h1>
+            <form id="quiz-form">
+                <button type="submit">Kumpulkan Jawaban</button>
+            </form>
+        </div>
     </div>
 
-    <div id="guru-form" class="form-content">
-        <form id="formLoginGuru" onsubmit="loginGuru(event)">
-            <input type="password" id="password" name="password" placeholder="Password Guru" required>
-            <button type="submit">Login Guru</button>
-            <p id="guruError" class="error"></p>
-        </form>
+    <div id="guru-dashboard-view" class="view-container hidden">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>Dashboard Analisis Asesmen Diagnostik</h1>
+                <button id="guru-logout-btn">Logout</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Total Pengerjaan</h4>
+                    <p id="stat-total-siswa">0</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Rata-rata Nilai PG</h4>
+                    <p id="stat-rata-rata-pg">0</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Likert Paling Umum</h4>
+                    <p id="stat-likert-umum">-</p>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <div class="card chart-card">
+                    <h3>Analisis Skala Likert</h3>
+                    <div class="chart-container">
+                        <canvas id="likert-chart"></canvas>
+                    </div>
+                </div>
+                <div class="card table-card">
+                    <div class="table-header">
+                        <h3>Detail Hasil Siswa</h3>
+                        <div class="table-controls">
+                            <select id="filter-kelas"></select>
+                            <button id="export-pdf-btn">Export ke PDF</button>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Nama Siswa</th>
+                                    <th>Kelas</th>
+                                    <th>Nilai PG</th>
+                                    <th>Nilai Total</th> <th>Aksi</th> </tr>
+                            </thead>
+                            <tbody id="hasil-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+    
+    <div id="cetak-view" class="hidden">
+        </div>
 
-<script>
-    // Inisialisasi Database di memori jika belum ada
-    if (!localStorage.getItem('hasilKuisSiswa')) {
-        localStorage.setItem('hasilKuisSiswa', JSON.stringify([]));
-    }
 
-    function showForm(formName) {
-        document.getElementById('siswa-form').classList.remove('active');
-        document.getElementById('guru-form').classList.remove('active');
-        document.querySelector('.tab-button.active').classList.remove('active');
-
-        document.getElementById(formName + '-form').classList.add('active');
-        document.querySelector(`.tab-button[onclick="showForm('${formName}')"]`).classList.add('active');
-    }
-
-    function loginSiswa(event) {
-        event.preventDefault();
-        const nama = document.getElementById('nama').value;
-        const kelas = document.getElementById('kelas').value;
-
-        if (nama && kelas) {
-            // Simpan info siswa di sessionStorage untuk dibawa ke halaman kuis
-            sessionStorage.setItem('siswaNama', nama);
-            sessionStorage.setItem('siswaKelas', kelas);
-            window.location.href = 'quiz.html';
-        }
-    }
-
-    function loginGuru(event) {
-        event.preventDefault();
-        const password = document.getElementById('password').value;
-        const errorElement = document.getElementById('guruError');
-
-        if (password === 'Virus@21500') {
-            errorElement.textContent = '';
-            // Tandai guru sudah login
-            sessionStorage.setItem('role', 'guru');
-            window.location.href = 'hasil.html';
-        } else {
-            errorElement.textContent = 'Password salah!';
-        }
-    }
-    document.addEventListener('contextmenu', event => event.preventDefault());
-</script>
-
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    
+    <script src="app.js"></script>
 </body>
 </html>
