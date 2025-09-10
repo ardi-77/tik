@@ -1,0 +1,22 @@
+/* Gabungkan semua CSS dari file-file HTML Anda dan tambahkan ini */
+.hidden { display: none !important; }
+
+/* View Container */
+.view-container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Login Container from index.html */
+.login-container { background-color: #ffffff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); width: 100%; max-width: 400px; text-align: center; }
+.login-container h2 { color: #1c1e21; margin-bottom: 25px; }
+.login-container input[type="password"] { width: calc(100% - 22px); padding: 12px 10px; margin-bottom: 20px; border: 1px solid #dddfe2; border-radius: 6px; font-size: 16px; }
+.login-container button { width: 100%; padding: 12px; background-color: #1877f2; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 18px; font-weight: bold; }
+.error { color: #fa383e; margin-top: 15px; font-size: 14px; display: none; }
+
+/* ... (Salin sisa CSS dari file penilaian.html Anda ke sini) ... */

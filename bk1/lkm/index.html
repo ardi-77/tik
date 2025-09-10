@@ -3,97 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Penilaian Lembar Kerja Murid</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .login-container {
-            background-color: #ffffff;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-        h2 {
-            color: #1c1e21;
-            margin-bottom: 25px;
-        }
-        input[type="password"] {
-            width: calc(100% - 22px);
-            padding: 12px 10px;
-            margin-bottom: 20px;
-            border: 1px solid #dddfe2;
-            border-radius: 6px;
-            font-size: 16px;
-        }
-        input[type="password"]:focus {
-            outline: none;
-            border-color: #1877f2;
-            box-shadow: 0 0 0 2px #e7f3ff;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #1877f2;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #166fe5;
-        }
-        .error {
-            color: #fa383e;
-            margin-top: 15px;
-            font-size: 14px;
-            display: none;
-        }
-    </style>
+    <title>Penilaian Lembar Kerja Murid</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="login-container">
-    <h2>for Teacher</h2>
-    <h1>Penilaian Lembar Kerja Murid</h1>
-    <form id="formLoginGuru" onsubmit="loginGuru(event)">
-        <input type="password" id="password" name="password" placeholder="Masukkan Password" required>
-        <button type="submit">Login</button>
-        <p id="guruError" class="error"></p>
-    </form>
-</div>
+    <div id="login-view" class="view-container">
+        <div class="login-container">
+            <h2>for Teacher</h2>
+            <h1>Penilaian Lembar Kerja Murid</h1>
+            <form id="formLoginGuru">
+                <input type="password" id="password" name="password" placeholder="Masukkan Password" required>
+                <button type="submit">Login</button>
+                <p id="guruError" class="error"></p>
+            </form>
+        </div>
+    </div>
 
-<script>
-    function loginGuru(event) {
-        event.preventDefault();
-        const passwordInput = document.getElementById('password');
-        const errorElement = document.getElementById('guruError');
-        
-        if (passwordInput.value === 'Virus@215000') {
-            // Tandai guru sudah login di sessionStorage
-            sessionStorage.setItem('guruLoggedInLKM', 'true');
-            // Arahkan ke halaman penilaian
-            window.location.href = 'penilaian.html';
-        } else {
-            errorElement.textContent = 'Password yang Anda masukkan salah.';
-            errorElement.style.display = 'block';
-        }
-    }
-    document.addEventListener('contextmenu', event => event.preventDefault());
-</script>
+    <div id="app-view" class="view-container hidden">
+        <div class="container">
+            <div class="header-controls no-print">
+                <h1>Penilaian Lembar Kerja Murid</h1>
+                <button id="logout-btn" class="btn-logout">Logout</button>
+            </div>
 
+            <fieldset class="no-print" id="formContainer">
+                <legend id="formLegend">Formulir Penilaian Baru</legend>
+                <form id="penilaianForm">
+                    <input type="hidden" id="penilaianId">
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="topik">Topik / Materi</label>
+                        <input type="text" id="topik" placeholder="Contoh: Studi Kasus Antrean Kafe" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="tujuanPembelajaran">Tujuan Pembelajaran</label>
+                        <textarea id="tujuanPembelajaran" rows="3" placeholder="Contoh: Menerapkan 4 fondasi berpikir komputasional..." required></textarea>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="kelas">Pilih Kelas</label>
+                            <select id="kelas" required>
+                                <option value="" disabled selected>-- Pilih Kelas --</option>
+                                <option value="X TKPI">X TKPI</option><option value="X NKPI A">X NKPI A</option><option value="X NKPI B">X NKPI B</option>
+                                <option value="X TSM A">X TSM A</option><option value="X TSM B">X TSM B</option><option value="X APAT A">X APAT A</option><option value="X APAT B">X APAT B</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="tanggal">Tanggal Kegiatan</label>
+                            <input type="date" id="tanggal" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="namaKelompok">Nama Kelompok</label>
+                            <select id="namaKelompok" required>
+                                <option value="" disabled selected>-- Pilih Kelompok --</option>
+                                <option value="Kelompok 1">Kelompok 1</option><option value="Kelompok 2">Kelompok 2</option><option value="Kelompok 3">Kelompok 3</option>
+                                <option value="Kelompok 4">Kelompok 4</option><option value="Kelompok 5">Kelompok 5</option><option value="Kelompok 6">Kelompok 6</option>
+                                <option value="Kelompok 7">Kelompok 7</option><option value="Kelompok 8">Kelompok 8</option><option value="Kelompok 9">Kelompok 9</option><option value="Kelompok 10">Kelompok 10</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="namaSiswa">Nama Siswa (1 nama per baris)</label>
+                            <textarea id="namaSiswa" rows="3" placeholder="Contoh:&#10;Budi Gunawan&#10;Ani Lestari" required></textarea>
+                        </div>
+                    </div>
+                    <h3>Aspek yang Dinilai</h3>
+                    <table>
+                        <thead><tr><th>Aspek</th><th>Kegiatan</th><th>Nilai (1-20)</th><th>Predikat</th></tr></thead>
+                        <tbody id="aspekTableBody"></tbody>
+                    </table>
+                    <div id="totalScore" class="total-score">Total Akumulasi Nilai Predikat: <span id="totalScoreValue">-</span></div>
+                    <br>
+                    <div class="action-buttons">
+                        <button type="submit" id="btnSave" class="btn-primary">Simpan Penilaian</button>
+                        <button type="button" id="btnCancel" class="btn-logout" style="display:none;">Batal Ubah</button>
+                    </div>
+                </form>
+            </fieldset>
+
+            <div id="reportSection">
+                <h2>Laporan Penilaian</h2>
+                <div class="form-group no-print">
+                    <label for="filterKelas">Filter Laporan Berdasarkan Kelas</label>
+                    <select id="filterKelas">
+                        <option value="semua">Tampilkan Semua</option>
+                        <option value="X TKPI">X TKPI</option><option value="X NKPI A">X NKPI A</option><option value="X NKPI B">X NKPI B</option>
+                        <option value="X TSM A">X TSM A</option><option value="X TSM B">X TSM B</option><option value="X APAT A">X APAT A</option><option value="X APAT B">X APAT B</option>
+                    </select>
+                </div>
+                <table id="reportTable">
+                    <thead><tr><th>Kelas</th><th>Kelompok</th><th>Tanggal</th><th>Topik</th><th>Predikat Akhir</th><th class="no-print">Aksi</th></tr></thead>
+                    <tbody id="reportTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="detailModal" class="modal">
+        <div class="modal-content print-area">
+            <span class="close no-print">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script src="app.js"></script>
 </body>
 </html>
-
