@@ -1,1 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formatif Dekomposisi</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Library untuk Export PDF -->
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf-autotable@latest/dist/jspdf.plugin.autotable.js"></script>
+    <!-- Library untuk Dialog Notifikasi -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
 
+    <!-- === VIEW: LOGIN === -->
+    <div id="login-view" class="view-container">
+        <div class="login-box">
+            <div class="login-form-container">
+                <h1>Formatif Dekomposisi</h1>
+                <div class="tabs">
+                    <div class="tab active" data-tab="siswa">Siswa</div>
+                    <div class="tab" data-tab="guru">Guru</div>
+                </div>
+
+                <!-- Form Login Siswa -->
+                <form id="siswa-login-form" class="login-form">
+                    <select id="kelas" required>
+                        <option value="">Pilih Kelas</option>
+                        <option value="X TKPI">X TKPI</option>
+                        <option value="X NKPI A">X NKPI A</option>
+                        <option value="X NKPI B">X NKPI B</option>
+                        <option value="X APAT A">X APAT A</option>
+                        <option value="X APAT B">X APAT B</option>
+                        <option value="X TSM A">X TSM A</option>
+                        <option value="X TSM B">X TSM B</option>
+                    </select>
+                    <input type="text" id="namaLengkap" placeholder="Nama Lengkap" required>
+                    <button type="submit">Mulai Mengerjakan</button>
+                </form>
+
+                <!-- Form Login Guru -->
+                <form id="guru-login-form" class="login-form hidden">
+                    <input type="password" id="guruPassword" placeholder="Password Guru" required>
+                    <button type="submit">Login Guru</button>
+                </form>
+            </div>
+            <div class="login-welcome-panel">
+                <h2>Selamat Datang!</h2>
+                <p>Silakan login untuk memulai asesmen formatif Pengantar Berpikir Komputasional.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- === VIEW: QUIZ === -->
+    <div id="quiz-view" class="view-container hidden">
+        <div class="quiz-container">
+            <div class="quiz-header">
+                <h2>Formatif Dekomposisi</h2>
+                <div id="countdown-timer" class="timer">60:00</div>
+            </div>
+            <form id="quiz-form">
+                <!-- Soal akan digenerate oleh JavaScript -->
+            </form>
+        </div>
+    </div>
+
+    <!-- === VIEW: DASHBOARD GURU === -->
+    <div id="guru-dashboard-view" class="view-container hidden">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>Hasil Pekerjaan Siswa</h1>
+                <button id="guru-logout-btn">Logout</button>
+            </div>
+            <div class="card table-card">
+                <div class="table-header">
+                    <h3>Detail Hasil Siswa</h3>
+                    <div class="table-controls">
+                        <select id="filter-kelas"></select>
+                        <button id="export-pdf-btn">Cetak Hasil Per Kelas</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="results-table">
+                       <thead>
+                            <tr>
+                                <th>Nama Siswa</th>
+                                <th>Kelas</th>
+                                <th>Nilai PG</th>
+                                <th>Nilai B/S</th>
+                                <th>Nilai Akhir (NA)</th> <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hasil-table-body">
+                            <!-- Hasil akan ditampilkan di sini -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Firebase SDK Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <!-- Script Aplikasi Anda -->
+    <script src="app.js"></script>
+</body>
+</html>
